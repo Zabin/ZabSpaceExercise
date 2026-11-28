@@ -364,8 +364,8 @@ The GDS level is authoritative; these are stated so they are not mistaken for dr
   the rules the browser suite asserts and states that the rest of the client is not asserted end to
   end; OQ1 asks how far that should extend. (Restated 2026-10-24: the original text said no browser
   test existed.)
-- [x] **DOM content (`BL-0293`).** DOM-007 was already absorbed into GDS-06 NFR-9, which this
-  document applies rather than restates (§2, §4). No other DOM section has UI content.
+- [x] **DOM content (`BL-0293`).** The retired human-factors domain document was already absorbed into GDS-06 NFR-9, which this
+  document applies rather than restates (§2, §4). No other domain document section had UI content.
 - [x] **Decision recorded:** **this document is the authoritative UI architecture.**
   the retired design corpus part 09, the retired design corpus part 05 and the retired design corpus part 10 are superseded in full, and the retired v1 build specification part 07 and
   the retired design corpus part 06 are superseded for their UI content. None was edited here; they retired with the build specification

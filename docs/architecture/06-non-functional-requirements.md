@@ -13,7 +13,7 @@
 > (companion hierarchical elaboration with full traceability fields),
 > [GDS-05](05-functional-requirements.md), [GDS-03](03-architecture.md),
 > [`adr/INDEX.md`](adr/INDEX.md) (ADR-0002, -0004, -0006, -0007, -0014, -0015, -0018, -0019, -0026,
-> -0030, -0038). Absorbs DOM-005 §3–4 and §6, DOM-007 §3–6 and DOM-008 §3 (see "Merge gate").
+> -0030, -0038). Absorbs the retired validation domain document §3–4 and §6, the retired human-factors domain document §3–6 and the retired AI-integration domain document §3 (see "Merge gate").
 
 [↑ Architecture index](INDEX.md) · [Docs index](../INDEX.md)
 
@@ -56,9 +56,9 @@ Traces to `CLAUDE.md` load-bearing invariants 1 and 5; ADR-0002, ADR-0006, ADR-0
   in-world AI: Red doctrine decisions draw only from the seeded RNG, and any non-deterministic
   computation (ML inference, unseeded randomness, wall-clock reads beyond the session layer's
   clock anchor) is prohibited inside `engine/` and may affect the world only through an ordinary
-  `SessionAPI` call (ADR-0030; absorbs DOM-008 §3, second bullet). Variability across runs is
+  `SessionAPI` call (ADR-0030; absorbs the retired AI-integration domain document §3, second bullet). Variability across runs is
   studied by driving many seeds externally, never by relaxing determinism within one run (absorbs
-  DOM-005 §6). *(→ `NFR-1500`, `NFR-2400`; FR-E2 / `FR-1120`)*
+  the retired validation domain document §6). *(→ `NFR-1500`, `NFR-2400`; FR-E2 / `FR-1120`)*
 - **NFR-11 Sub-stepped time.** The clock advances to the next scheduled event and never steps past
   it, at any time multiplier; a short LEO pass is never skipped by a large step. *(→ `NFR-1700`;
   ADR-0006)*
@@ -150,7 +150,7 @@ Traces to invariants 2 and 6; ADR-0001, ADR-0007, ADR-0009, ADR-0023.
   no wall-clock reads, no `random` outside `rng.py`, all enforced by the AST import-guard test).
   Content — vignettes, asset and effect templates, inject templates, Red doctrine presets — is
   data, never Python; scenario logic does not leak into code, and a new Red posture is a new preset,
-  not a new engine branch (DOM-008 §3, first bullet). Vignette-schema changes are additive: every shipped
+  not a new engine branch (the retired AI-integration domain document §3, first bullet). Vignette-schema changes are additive: every shipped
   vignette still loads and behaves identically after a schema extension. The three fidelity seams
   (`Propagator`, `AccessProvider`, `EffectResolver`) are documented and independently testable, so
   a higher-fidelity model substitutes without call-site changes. Development is test-first with
@@ -178,7 +178,7 @@ Traces to GDS-02 §2–§4; ADR-0008, ADR-0018, ADR-0020.
 
 ## 7. Usability and human factors
 
-Traces to GDS-01 user classes; MSTR-003. Absorbs DOM-007 §3–§6 in full.
+Traces to GDS-01 user classes; MSTR-003. Absorbs the retired human-factors domain document §3–§6 in full.
 
 - **NFR-9 Accessible, legible presentation.** *(Added 2026-10-23: the load-bearing rules below —
   belief not truth, affordances reflect permission, kinetic confirmation — are verified in a real
@@ -201,7 +201,7 @@ Traces to GDS-01 user classes; MSTR-003. Absorbs DOM-007 §3–§6 in full.
   - **Panels follow the panel-manager contract.** Every panel can be closed, floated, resized and
     reset to dock from its first release.
   - **In-world AI is legible to White Cell.** The facilitator can see which Red doctrine preset is
-    active and what behavior to expect (DOM-008 §3, third bullet).
+    active and what behavior to expect (the retired AI-integration domain document §3, third bullet).
 
   *(→ `NFR-3000` covers the first bullet only; the rest have no leaf — gap G4)*
 - **NFR-10 Classification hygiene.** The White-Cell-selected classification banner renders on every
@@ -235,14 +235,14 @@ Traces to MSTR-001 §2 (training corpus as co-equal product, 2026-07-04); GDS-01
   scan on 2026-10-19 found 82 broken relative links across 10 live files, so the suite's first
   green run includes that cleanup. *(→ no leaf — gap G5; `test_training_sources.py` is the
   precedent for item 5)*
-- **NFR-19 Model credibility (verification is not validation)** *(absorbs DOM-005 §3–§4).* Tests
+- **NFR-19 Model credibility (verification is not validation)** *(absorbs the retired validation domain document §3–§4).* Tests
   verify that the engine matches its own specification; they do not show that the specification
   behaves plausibly. Every moderate-fidelity behavior that a training lesson depends on (power
   budget, custody decay, jam and engagement outcomes) is validated by comparing simulated
   quantities against reference values cited in the research encyclopedia, recorded as an explicit
   comparison (the June 2026 power-model recalibration is the worked precedent), never as a
-  "looks reasonable" judgment. Assessment-instrument validation (DOM-005 §5) is a feature-level
-  method for FS-201, not a system quality attribute, and is not absorbed here. *(→ no leaf — gap
+  "looks reasonable" judgment. Assessment-instrument validation (the retired validation domain document §5) is a feature-level
+  method for FS-201, not a system quality attribute, and is not absorbed here; FS-201 now states it ("Validity checks"). *(→ no leaf — gap
   G6)*
 
 Observability has no tag: no source commits to a metrics or tracing surface; the clock-lag
@@ -336,7 +336,7 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
 - `NFR-5`: "dependency pinning" is not the as-built posture (minimum versions; a lock at each release, `BL-0299`/`BL-0318`).
 - `NFR-6`: extended with failure atomicity (ADR-0038), which postdates the legacy text.
 - `NFR-7`: the 80% coverage figure was never measured and is withdrawn (no coverage target, `BL-0299`); schema additivity (`NFR-2010`) added.
-- `NFR-9`: extended with the DOM-007 human-factors constraints.
+- `NFR-9`: extended with the retired human-factors domain document's constraints.
 - `NFR-11`–`NFR-19`: new tags for attributes the legacy list never named.
 
 ## Merge gate (closed)
@@ -353,11 +353,11 @@ The GDS level is authoritative; these are stated so no one mistakes them for dri
 - [x] **Reconciled with `requirements/02` instead of restarting it.** Every one of its 28 numbered
   leaves (`NFR-1100`…`NFR-3700`) maps under a tag above. Six leaf corrections (C1–C6) and six gaps
   (G1–G6) are handed to `04`; none is resolved by editing `requirements/02` here.
-- [x] **DOM content absorbed (`BL-0293`).** Absorbed: DOM-005 §3, §4 and §6 (into NFR-19 and
-  NFR-3); DOM-007 §3, §4, §5 and §6 (into NFR-9); DOM-008 §3 (into NFR-3, NFR-7 and NFR-9). Not absorbed,
-  and why: DOM-005 §5 (assessment-instrument validation — a feature-level method for FS-201);
-  DOM-006 (content and feature governance — process, not a system quality attribute; belongs with
-  the MSTR governance documents `01-vision` now owns); DOM-001–004 and DOM-009 (no non-functional
+- [x] **DOM content absorbed (`BL-0293`).** Absorbed: the retired validation domain document §3, §4 and §6 (into NFR-19 and
+  NFR-3); the retired human-factors domain document §3, §4, §5 and §6 (into NFR-9); the retired AI-integration domain document §3 (into NFR-3, NFR-7 and NFR-9). Not absorbed,
+  and why: the retired validation domain document §5 (assessment-instrument validation — a feature-level method for FS-201, which now states it);
+  the retired governance domain document (content and feature governance — process, not a system quality attribute; belongs with
+  the MSTR governance documents `01-vision` now owns, and now sits in MSTR-006 §3a and §6a); the training, assessment, white-cell, research and doctrine-development domain documents (no non-functional
   content).
 - [x] **Decision recorded:** consistent with GDS-05 and the blanket supersession in `CLAUDE.md`,
   **this document is the authoritative non-functional statement**, and the retired v1 build specification part 04 §9 is
