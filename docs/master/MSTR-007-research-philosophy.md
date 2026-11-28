@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001, MSTR-002
-> **Referenced By:** DOM-004, all R1xx-R5xx encyclopedia documents, `docs/research/encyclopedia/R*00-index.md`
+> **Referenced By:** all R1xx-R5xx encyclopedia documents, `docs/research/encyclopedia/R*00-index.md`
 > **Produces:** the design rules for the entire research encyclopedia (R100-R500)
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** the former future-work list §12 (the precedent corpus-expansion plan),
@@ -15,8 +15,7 @@
 ## 1. Purpose
 
 States why the research encyclopedia (`docs/research/encyclopedia/`, tiers R100-R500) exists, what
-it is *not* for, and the fixed structure every topic document must follow. DOM-004 (Research
-Framework) governs the broader research program (including the human-subject/validation research
+it is *not* for, and the fixed structure every topic document must follow. FS-301 (Research Analytics, with MSTR-006 §3 for authorization) covers the broader research program (including the human-subject/validation research
 the simulator might support); this document is specifically about the encyclopedia corpus's
 purpose and shape.
 
@@ -40,9 +39,9 @@ implementation guidance has failed at this corpus's actual job.
 |---|---|---|---|
 | **R100** | Space Operations Foundation | ~20-30 | Orbital mechanics, SDA, C2, custody, ground/constellation/sensor ops — the simulator's direct subject matter. |
 | **R200** | Decision Sciences | ~14 | Probability, Bayesian reasoning, decision/game theory, cognitive bias, OODA, MCDA, signaling, utility, planning — what justifies the simulator's judgment-under-uncertainty design (MSTR-003 §2). |
-| **R300** | Military Analysis | ~12 | Campaign design, operational art, deterrence/escalation, wargaming theory, red teaming, COG, EBO, COA analysis — what justifies White Cell / scenario design (DOM-003, DOM-009). |
-| **R400** | Research Methods | ~13 | Experiment design, statistics, Monte Carlo, sensitivity analysis, V&V, measurement, uncertainty — what justifies assessment/validation work (DOM-002, DOM-005). |
-| **R500** | Future Operations | ~9 | AI/autonomy, human-AI teaming, future C2, multi-domain ops — forward-looking context for DOM-008 (AI Integration) and long-horizon Feature Specs. |
+| **R300** | Military Analysis | ~12 | Campaign design, operational art, deterrence/escalation, wargaming theory, red teaming, COG, EBO, COA analysis — what justifies White Cell / scenario design (GDS-05, the vignette framework). |
+| **R400** | Research Methods | ~13 | Experiment design, statistics, Monte Carlo, sensitivity analysis, V&V, measurement, uncertainty — what justifies assessment/validation work (FS-201, GDS-06 NFR-19). |
+| **R500** | Future Operations | ~9 | AI/autonomy, human-AI teaming, future C2, multi-domain ops — forward-looking context for the in-world AI constraint (MSTR-003 §2a) and long-horizon Feature Specs. |
 
 Per-tier index documents (`R100-index.md` ... `R500-index.md`) list every topic in that tier with
 its ID, title, one-line scope, status, and dependency on other topics.

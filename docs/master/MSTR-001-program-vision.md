@@ -4,8 +4,8 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** none (this is the root document)
-> **Referenced By:** MSTR-002, MSTR-003, MSTR-004, MSTR-005, MSTR-006, MSTR-007, all DOM-*, all FS-*
-> **Produces:** the mandate for DOM-001..009 and the entire downstream documentation tree
+> **Referenced By:** MSTR-002, MSTR-003, MSTR-004, MSTR-005, MSTR-006, MSTR-007, all FS-*
+> **Produces:** the mandate for the entire downstream documentation tree
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** [`MSTR-002`](MSTR-002-architecture-principles.md), [`MSTR-003`](MSTR-003-educational-philosophy.md),
 > [`docs/architecture/01-concept-of-operations.md`](../architecture/01-concept-of-operations.md)
@@ -47,10 +47,10 @@ design trail.
 Concretely, this means:
 
 - Every capability the simulator has, or will have, should be traceable from a **training
-  objective** through a **domain framework**, through the **research** that justifies it, to a
+  objective** through its **grounding** (the GDS level or ADS that states it), through the **research** that justifies it, to a
   **Feature Specification**, to one or more **Implementation Packages**, to the code and tests that
   realize it. See [`MSTR-005`](MSTR-005-documentation-map.md) for the map and
-  [`docs/domains/`](../domains/) §Traceability sections for the worked chains.
+  [`docs/features/feature-index.md`](../features/feature-index.md) for the worked chains (its Grounding column).
 - Documentation is **versioned, statused, and dependency-tracked** like code — see
   [`MSTR-006`](MSTR-006-governance-principles.md).
 - The **training corpus is a co-equal product with the code** (owner decision, 2026-07-04). The
@@ -65,7 +65,7 @@ Concretely, this means:
   makes its artifacts first-class citizens of the engineering baseline.
 - The existing `docs/research/`, `docs/training/`, `docs/vignettes/` corpus is **not replaced**. It
   is the load-bearing foundation this tree builds on top of and cross-references; see
-  [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how the new (`master/`, `domains/`,
+  [`MSTR-005`](MSTR-005-documentation-map.md) §3 for exactly how the new (`master/`,
   `features/`, `implementation/`, `architecture/`, `scenarios/`, expanded `research/`) directories
   relate to the pre-existing themes. The v1 build specification and design corpus were folded into
   `architecture/` and are retired.
@@ -77,11 +77,11 @@ Concretely, this means:
 | White Cell facilitators | `docs/training/`, `docs/vignettes/`, Mission brief panels | Run exercises, write injects, debrief |
 | Operators (Red/Blue trainees) | `docs/training/`, in-app tutorial panel | Learn the tool and the doctrine it encodes |
 | Human maintainers | `docs/architecture/` (binding), `CLAUDE.md` | Understand what is built and why |
-| **Future coding LLM agents** | `docs/master/`, `docs/domains/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
-| Researchers / assessment designers | `docs/domains/DOM-002`, `DOM-004`, `DOM-005`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
+| **Future coding LLM agents** | `docs/master/`, `docs/research/` (R1xx–R5xx), `docs/features/`, `docs/implementation/` | Implement new capability without inferring intent from code |
+| Researchers / assessment designers | `docs/architecture/07-data-model.md` §8, `docs/features/FS-201-competency-assessment.md`, `FS-301-research-analytics.md`, `docs/research/R200`, `R400` | Build measurement and validation on top of the simulator |
 
 The fifth row is the new audience this expansion is built for. Every document in `docs/master/`,
-`docs/domains/`, `docs/features/`, `docs/implementation/`, and the `R1xx`–`R5xx` research tiers is
+`docs/features/`, `docs/implementation/`, and the `R1xx`–`R5xx` research tiers is
 written so it is **independently retrievable** — an agent that opens exactly one file should have
 enough context to act correctly, with explicit pointers (not implicit assumptions) to whatever else
 it needs. See [`MSTR-006`](MSTR-006-governance-principles.md) §4 "AI authoring constraints".

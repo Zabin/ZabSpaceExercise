@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Stable
 > **Dependencies:** MSTR-001, MSTR-005
-> **Referenced By:** DOM-006, DOM-008, all FS-*, all IMP-*, `ROADMAP.md`
+> **Referenced By:** all FS-*, all IMP-*, `ROADMAP.md`
 > **Produces:** the authoring/versioning/authorization rules every document and package must follow
 > **Feature Mapping:** N/A — program-level
 > **Related Topics:** the former future-work list §12.5.0 (authoring-cadence precedent),
@@ -15,9 +15,8 @@
 ## 1. Purpose
 
 Defines how documents in this corpus are versioned, statused, authorized, and kept consistent over
-time — so the corpus itself doesn't decay the way undocumented codebases do. DOM-006 (Governance
-Framework) is the domain-level elaboration of this for feature/process governance generally; this
-document is specifically about the documentation corpus's own lifecycle.
+time — so the corpus itself doesn't decay the way undocumented codebases do. §3a and §6a below are the elaboration of this for the simulator's content and feature scope; §1 to
+§3 and the rest are specifically about the documentation corpus's own lifecycle.
 
 ## 2. Document lifecycle and status taxonomy
 
@@ -73,7 +72,6 @@ files. Concretely:
 - **Size discipline**, by document class (a soft target, not a hard limit — clarity wins over
   strict page-count compliance):
   - Master documents: ~10-20 pages equivalent.
-  - Domain documents: ~15-30 pages equivalent.
   - Research encyclopedia topics: ~3-8 pages equivalent — short and single-topic on purpose.
   - Design Synthesis documents (`ADS-xxx`): ~8-15 pages equivalent across its ten fixed sections
     (MSTR-005 §3a) — a synthesis that needs more room is a sign the capability cluster should be
@@ -91,7 +89,7 @@ files. Concretely:
 
 ## 5. Required metadata block
 
-Every document in `master/`, `domains/`, `research/encyclopedia/`, `features/`, `implementation/`,
+Every document in `master/`, `research/encyclopedia/`, `features/`, `implementation/`,
 `architecture/`, and `scenarios/` opens with:
 
 ```
@@ -115,7 +113,7 @@ If two documents disagree:
 1. `docs/architecture/` (the GDS-00…GDS-10 ladder) wins over everything (`CLAUDE.md`; MSTR-001 §7) —
    this replaces the former rule that the v1 build specification won.
 2. Within the new tree, a more specific document (an Implementation Package) does not override a
-   less specific one (a Feature Specification, a Domain document) on matters of *intent* — if an
+   less specific one (a Feature Specification, an architecture level) on matters of *intent* — if an
    IMP package's design seems to contradict its parent FS's stated purpose, that's a defect in the
    IMP package, not a silent reinterpretation of the FS.
 3. Genuine ambiguity that isn't resolved by (1)/(2) should be raised explicitly (flagged in the
