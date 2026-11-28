@@ -45,8 +45,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       DRY_RUN: ${{ inputs.dry_run }}
-      # Old branches with work that never reached main; the owner decides these by hand.
-      KEEP: "claude/pipeline-skill-h31gs5 claude/planning-docs-review-rmZwP"
+      # Branches to keep even though they have no open pull request (none; the owner approved deleting the two old ones, 2026-11-28).
+      KEEP: ""
     steps:
       - uses: actions/checkout@v4
         with:
