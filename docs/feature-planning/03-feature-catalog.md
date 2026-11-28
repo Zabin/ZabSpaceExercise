@@ -53,7 +53,7 @@ leaves + 18 Candidate Requirements CR-01–CR-18), `docs/requirements/02-non-fun
 (23 baselined NFR leaves + 7 Candidate CNFR-01–CNFR-07), `docs/requirements/03-requirements-
 traceability-matrix.md`, `docs/architecture/00`–`05` (GDS-00–05, all merge-gate-closed), the ADR
 index (`ADR-0001`–`ADR-0031`, all Accepted), `docs/architecture/interface-control-document.md` (ICD,
-`INT-0001`–`INT-0016`), `docs/domains/DOM-001`–`009`, and `docs/reviews/strategic-review-2026-07.md`
+`INT-0001`–`INT-0016`), the retired domain documents, and `docs/reviews/strategic-review-2026-07.md`
 (Future Concepts FC-01–FC-15, Gap Analysis GAP-01–GAP-13).
 
 **Only the 49 baselined FR + 23 baselined NFR leaves are decomposed into Features below** — per
@@ -1063,7 +1063,7 @@ not a re-decomposition of the whole baseline.
 | **Title** | Automated Non-Aggregating Competency Rubric Computation |
 | **Purpose** | Replace the engine's binary objective-flip signal with a richer, per-dimension qualitative measurement of how a cell demonstrated a vignette's intended competency, without ever collapsing dimensions into one score. |
 | **Description** | Computes rubric-tier results (custody quality, window discipline, belief-truth divergence in the first iteration) per cell per exercise, read-only over existing eventlog/custody/order-log/AAR-snapshot state; never aggregates into a composite score or win/loss determination. |
-| **Scope** | The computation and its non-aggregation guarantee. Does not cover rubric-tier *authoring* tooling (a separate, unauthorized candidate — `FS-202`) or the facilitator's own qualitative judgment mode (DOM-002 §6's "facilitator rubric," which requires no new engine feature). |
+| **Scope** | The computation and its non-aggregation guarantee. Does not cover rubric-tier *authoring* tooling (a separate, unauthorized candidate — `FS-202`) or the facilitator's own qualitative judgment mode (the retired assessment domain document §6's "facilitator rubric," which requires no new engine feature). |
 | **Included Requirements** | FR-10110 |
 | **Excluded Requirements** | FR-4710 (the sibling "no automated score/win-loss" prohibition this Feature must not cross — owned by FEAT-4700) |
 | **Dependencies** | FEAT-1500 (custody), FEAT-3400 (execute-time re-validation/rejection data), FEAT-7300 (AAR snapshot diff) |

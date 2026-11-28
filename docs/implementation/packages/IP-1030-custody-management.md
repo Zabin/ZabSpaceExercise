@@ -130,7 +130,7 @@ order-system test suite (the `engage`-order rejection path).
 - If a future console rework styles belief indicators in a way confusable with ground-truth
   assertions, the fog-of-war pedagogy is undermined regardless of this package's backend
   correctness — the single most load-bearing UI rule in the corpus
-  ([DOM-007](../../domains/DOM-007-human-factors-framework.md) §4).
+  ([GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../../architecture/08-ui-architecture.md)).
 - If custody state were ever stored only as a transient display value (not reconstructible via
   eventlog replay), IP-1070's AAR and IP-2010's belief-truth-divergence dimension would have no
   queryable data to operate on — the current pure-function-over-replay design avoids this by

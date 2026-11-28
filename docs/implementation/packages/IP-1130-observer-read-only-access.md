@@ -137,7 +137,7 @@ sequence for `08-code-implementation`:
 4. Add "Observer" as a selectable seat client-side and disable/hide command controls when seated as
    Observer (convenience layer over the server-side guarantee from task 3, not a substitute for it).
 5. **Explicitly do not implement** in this package: CR-06 (mid-exercise Observer reassignment, an
-   unbaselined candidate requirement per FS-113's own Open Questions) or a `docs/domains/`
+   unbaselined candidate requirement per FS-113's own Open Questions) or a domain
    framework document for Observer (a documentation-tier gap FS-113 itself flags, out of this
    package's scope).
 

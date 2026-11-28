@@ -151,7 +151,7 @@ inject-library test suite.
 ## Risks
 
 - Composing multiple inject templates into a pre-scripted sequence ahead of a session is explicitly
-  out of this package's scope — FS-106 §9 (DOM-003 §9) names it as not currently possible; treating
+  out of this package's scope — FS-106 §9 ([FS-108](../../features/FS-108-inject-authoring.md)) names it as not currently possible; treating
   it as in scope in a future change would be a silent scope addition requiring a dedicated Feature
   Spec (FS-108 or a new ID).
 - Granting any capability to Red/Blue through this dashboard that provides indirect ground-truth

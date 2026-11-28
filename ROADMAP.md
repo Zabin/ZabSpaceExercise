@@ -83,8 +83,8 @@ Git history and `archive/release-1.0` keep the text. Nothing here depends on the
 | RE-100 | Tier R100 — Space Operations Foundation (39 topics authored, 0 planned — *this row was stale at 30 before this revision; the aggregate "68 authored" count in this section's header above predates R131-R137 too and is not otherwise reconciled by this pass*) | `research/encyclopedia/R100-index.md` | RS-04, RS-05, RS-06 | 🚧 *(39/39 authored topics closed. **R138** (Satellite Service Availability) and **R139** (Passive-RF Emitter Characterization and Geolocation) authored 2026-11-01 to ground Release 2.0 decisions D3/D4 (memo `docs/feature-planning/06a-release-2-d3-d4-research.md`; queued for the methodology §5.3 verification pass). **R137** (Bus and Payload Configuration Parameter Catalog) authored 2026-07-05 — a completeness/navigation index of every bus-subsystem and payload-type configuration parameter, cross-referenced to whichever topic characterizes it, grounding `docs/pipeline/backlog.md` `BL-0052` (Vignette Creator); surfaces the `weather`/`mw` `BEAM_MODES` coverage gap plus four smaller candidate gaps. Same-day, **R101/R107/R109/R110/R111/R112/R134** extended with realistic parameter-range grounding for the same `BL-0052` need (TLE format, ground-station siting, weather/missile-warning sensor characteristics, SATCOM bandwidth, EPS power budgets, Δv budgets, PNT accuracy). Prior: **R130** (Downlink Operations and Data Return) closed the one `engine/orders.py` action verb (`downlink`) R103/R107/R114 each disclaimed covering; **R129** (SIGINT Collection and Geolocation Accuracy) closed the 2026-06-27 re-audit gap on `engine/sigint.py`)* |
 | RE-200 | Tier R200 — Decision Sciences (14 topics) | `research/encyclopedia/R200-index.md` | MSTR-003 | 🚧 *(14/14 authored; 14/14 missing §2 Scope; 0/14 cite-compliant)* |
 | RE-300 | Tier R300 — Military Analysis (12 topics) | `research/encyclopedia/R300-index.md` | RS-01, RS-02, RS-07 | 🚧 *(12/12 authored; 12/12 missing §2 Scope; 0/12 cite-compliant — doctrinal/legal claims in this tier are the highest-stakes uncited content in the corpus)* |
-| RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | DOM-002, DOM-005 | ✅ *(13/13 authored; 13/13 have §2 Scope; 13/13 cite-compliant — GAP-13 closed 2026-07-02)* |
-| RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | DOM-008 | ✅ *(9/9 authored; 9/9 have §2 Scope; 9/9 cite-compliant — GAP-13 closed 2026-07-02)* |
+| RE-400 | Tier R400 — Research Methods (13 topics) | `research/encyclopedia/R400-index.md` | FS-201; GDS-06 NFR-19 | ✅ *(13/13 authored; 13/13 have §2 Scope; 13/13 cite-compliant — GAP-13 closed 2026-07-02)* |
+| RE-500 | Tier R500 — Future Operations (9 topics) | `research/encyclopedia/R500-index.md` | MSTR-003 §2a; GDS-06 NFR-3 | ✅ *(9/9 authored; 9/9 have §2 Scope; 9/9 cite-compliant — GAP-13 closed 2026-07-02)* |
 | RE-600 | Tier R600 — Training Pedagogy & Instructional Design (8 topics) | `research/encyclopedia/R600-index.md` | MSTR-001 §2, MSTR-003 | ✅ *(authored 2026-07-04: 8/8 topics — Instructional Systems Design, Adult Learning Theory, Simulation-Based Learning & Debriefing, Cognitive Load & Scaffolding, Learning-Path & Progression Design, Minimalist & Procedural Documentation, Assessment of Learning in Wargames, Software Onboarding & Tutorial Design — each with §2 Scope + full citations from first draft, never entering the uncited state R400/R500 were remediated out of; formal WebFetch verification pass open, BL-0028, since this session's WebFetch was policy-blocked)* |
 
 **Status:** R400 and R500 (22 topics) closed GAP-13 remediation 2026-07-02 — both now carry the
@@ -175,12 +175,12 @@ the `03-architecture-design-synthesis` skill. Optional per `MSTR-005` §4 — on
 clusters with real design tension; small/uncontested features skip straight to `FS-xxx`. Router:
 [`architecture/INDEX.md`](docs/architecture/INDEX.md).
 
-| ID | Document | Capability cluster | Owning domain | Status |
+| ID | Document | Capability cluster | Grounding | Status |
 |---|---|---|---|---|
 | ADS-00 | Architecture index | `architecture/INDEX.md` | — | ✅ |
-| ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | (no owning DOM) | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
-| ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
-| ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | (no owning DOM) | ✅ Authored (2026-07-05) |
+| ADS-3500 | Role-Scoped Command Enforcement | `architecture/ADS-3500-role-scoped-command-enforcement.md` | — | ✅ Authored (2026-07-05) — the first `ADS-xxx` in this project |
+| ADS-5100A | Vignette Creator — Authoring Session & UI Architecture | `architecture/ADS-5100A-vignette-creator-session-and-ui.md` | — | ✅ Authored (2026-07-05) |
+| ADS-5100B | Vignette Creator — Typed Parameter Schemas & Per-Cell ROE Enforcement | `architecture/ADS-5100B-typed-parameters-and-per-cell-roe.md` | — | ✅ Authored (2026-07-05) |
 | ADS-1500 | Per-Cell Custody — Estimated-State History & Export | `architecture/ADS-1500-per-cell-custody-estimated-state-and-export.md` | R105-grounded; FS-103 | ✅ Authored (2026-09-26) |
 
 **ADS-3500** resolves two Open Questions [`FS-116`](docs/features/FS-116-role-scoped-command-catalog.md)
@@ -244,15 +244,15 @@ the traceability matrix accordingly, and corrected stale pre-supersession "build
 language independently duplicated in `docs/requirements/01`/`02`'s own header notes (the same
 defect `ADR-0031` fixed in `architecture/00-vision.md` §7, but outside that document's scope).
 
-**DOM-002/004/005 backfill (2026-07):** a second follow-up requirements-tier pass, closing
+**Assessment/research/validation backfill (2026-07):** a second follow-up requirements-tier pass, closing
 `docs/feature-planning/05-feature-review.md` Finding F-01, ran `04-requirements-engineering` against
-DOM-002 (Assessment)/DOM-004 (Research)/DOM-005 (Validation) — the three domains grounding
-FS-201/FS-202/FS-301 with no prior requirement at all. Found that DOM-002/FS-201's automated
+the retired assessment, research and validation domain documents — the three domains grounding
+FS-201/FS-202/FS-301 with no prior requirement at all. Found that the assessment domain document's and FS-201's automated
 rubric computation conflicts with Accepted ADR-0017 (no automated scoring/assessment mechanism in
-v1) and DOM-004/FS-301's dedicated research-export interface directly conflicts with Accepted
+v1) and the research domain document's and FS-301's dedicated research-export interface directly conflicts with Accepted
 ADR-0029 (existing raw AAR/event-log export already deemed sufficient; a dedicated interface
 explicitly considered and rejected). **Zero new baselined `FR-1xxx`/`NFR-1xxx` requirements were
-added** — three new Candidate Requirements (`CR-19`–`CR-21`) were added instead, and DOM-005
+added** — three new Candidate Requirements (`CR-19`–`CR-21`) were added instead, and the validation domain document
 yielded no new leaf at all (validation methodology, not a system capability). Full analysis:
 [`reviews/requirements-domain-backfill-report.md`](docs/reviews/requirements-domain-backfill-report.md).
 
@@ -267,32 +267,32 @@ Domain → Research → **Feature Specification** → Implementation Package →
 `FS-xxx` describes what a capability must do, with no implementation detail (MSTR-005 §5 rule 4).
 Router: [`features/feature-index.md`](docs/features/feature-index.md).
 
-| ID | Document | Path | Owning domain | Status |
+| ID | Document | Path | Grounding | Status |
 |---|---|---|---|---|
 | FS-00 | Feature index | `features/feature-index.md` | — | ✅ |
-| FS-101 | Mission Planning | `features/FS-101-mission-planning.md` | DOM-001 | ✅ |
+| FS-101 | Mission Planning | `features/FS-101-mission-planning.md` | MSTR-003; vignette framework | ✅ |
 | FS-102 | Command Scheduling | `features/FS-102-command-scheduling.md` | (R103-grounded) | ✅ |
-| FS-103 | Custody Management | `features/FS-103-custody-management.md` | DOM-009 | ✅ |
-| FS-104 | SDA Tasking | `features/FS-104-sda-tasking.md` | DOM-009 | ✅ |
-| FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | DOM-001, DOM-007 | ✅ |
-| FS-106 | White Cell Dashboard *(v2.0, narrowed)* | `features/FS-106-white-cell-dashboard.md` | DOM-003 | ✅ |
-| FS-107 | After Action Review | `features/FS-107-after-action-review.md` | DOM-001, DOM-003 | ✅ |
-| FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | DOM-003 | ⛔ Planned (authorized) |
-| FS-109 | Multiplayer / LAN Session Transport | `features/FS-109-multiplayer-session-transport.md` | DOM-003 §6 | ✅ |
-| FS-110 | Save & Resume | `features/FS-110-save-and-resume.md` | DOM-003 §6 | ✅ |
-| FS-111 | AI-Red Doctrine Automation | `features/FS-111-ai-red-doctrine-automation.md` | DOM-009, DOM-008 | ✅ |
-| FS-112 | Classification Banner | `features/FS-112-classification-banner.md` | DOM-003 | ✅ (build unverified) |
-| FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | (no owning DOM) | ✅ (build unverified) |
-| FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | (no owning DOM) | ✅ (build unverified) |
-| FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | DOM-003 | ✅ (build unverified) |
-| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | (no owning DOM) | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
+| FS-103 | Custody Management | `features/FS-103-custody-management.md` | Vignette framework (Doctrine to content) | ✅ |
+| FS-104 | SDA Tasking | `features/FS-104-sda-tasking.md` | Vignette framework (Doctrine to content) | ✅ |
+| FS-105 | Spacecraft Operations | `features/FS-105-spacecraft-operations.md` | MSTR-003; GDS-06 NFR-9 | ✅ |
+| FS-106 | White Cell Dashboard *(v2.0, narrowed)* | `features/FS-106-white-cell-dashboard.md` | GDS-05 `FR-W6` | ✅ |
+| FS-107 | After Action Review | `features/FS-107-after-action-review.md` | MSTR-003 §8; GDS-05 | ✅ |
+| FS-108 | Inject Authoring *(candidate)* | `features/FS-108-inject-authoring.md` | GDS-05 `FR-W4` | ⛔ Planned (authorized) |
+| FS-109 | Multiplayer / LAN Session Transport | `features/FS-109-multiplayer-session-transport.md` | GDS-05 `FR-L3` | ✅ |
+| FS-110 | Save & Resume | `features/FS-110-save-and-resume.md` | GDS-05 `FR-L3` | ✅ |
+| FS-111 | AI-Red Doctrine Automation | `features/FS-111-ai-red-doctrine-automation.md` | Vignette framework (Doctrine to content); GDS-06 NFR-3 | ✅ |
+| FS-112 | Classification Banner | `features/FS-112-classification-banner.md` | GDS-05 `FR-W2` | ✅ (build unverified) |
+| FS-113 | Observer Read-Only Access | `features/FS-113-observer-read-only-access.md` | — | ✅ (build unverified) |
+| FS-114 | Hot-Seat Hand-Off Screen-Blank Menu | `features/FS-114-hot-seat-handoff.md` | — | ✅ (build unverified) |
+| FS-115 | Session Setup: Vignette Selection & Seat Assignment | `features/FS-115-session-setup.md` | GDS-05 `FR-W1` | ✅ (build unverified) |
+| FS-116 | Role-Scoped Command Catalog & Assignment Scoping | `features/FS-116-role-scoped-command-catalog.md` | — | ✅ Ready for implementation planning (v1.2 — both Open Questions closed via ADS-3500 v1.1; per-verb DEFENSE_VERBS classification corrected) |
 | FS-117 | Vignette Creator — In-App Authoring, Typed Parameters & Per-Cell ROE | `features/FS-117-vignette-creator.md` | FR-5100 family, FR-3420, NFR-2000/NFR-2010 | ✅ Ready for implementation planning — v1.1 closed Open Question 1 (`04-requirements-engineering` added `FR-5120`-`FR-5180`/`FR-3420`/`NFR-2010`) |
-| FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | DOM-002 | ✅ |
-| FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | DOM-002 | ⛔ Planned (authorized) |
-| FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | DOM-004, DOM-005 | ✅ |
+| FS-201 | Competency Assessment | `features/FS-201-competency-assessment.md` | GDS-05 `FR-A1`; GDS-07 §8 | ✅ |
+| FS-202 | Rubric Authoring *(candidate)* | `features/FS-202-rubric-authoring.md` | GDS-05 `FR-A1`; GDS-07 §8 | ⛔ Planned (authorized) |
+| FS-301 | Research Analytics | `features/FS-301-research-analytics.md` | GDS-07 §8; GDS-06 NFR-19 | ✅ |
 
 FS-108 and FS-202 are intentionally lighter-weight stubs (not full specs) — both are marked
-"(candidate)" in their owning domain document and require explicit user authorization (MSTR-006 §3)
+"(candidate)" in their former domain documents (since retired) and require explicit user authorization (MSTR-006 §3)
 before promotion to a full spec or any Implementation Package work.
 
 **FS-106 split (2026-07), per `docs/feature-planning/05-feature-review.md` Finding F-03:** v1.0
@@ -394,7 +394,7 @@ graph (`05-feature-review.md` F-13–F-20). **Original key findings (first pass)
 each (36 total); three Features (Classification Banner, Observer Read-Only Access, Hot-Seat
 Hand-Off) have zero presence in any existing `FS-xxx` document, confirming the motivating audit;
 `FS-106-white-cell-dashboard.md` bundles ten catalog Features across three Epics and is flagged as
-oversized; DOM-002/004/005 (Assessment/Research/Validation) have shipped `FS-201`/`FS-301` with no
+oversized; the assessment, research and validation domain documents (since retired) had shipped `FS-201`/`FS-301` with no
 corresponding FR/NFR baseline entry at all, a requirements-tier gap this catalog cannot close
 itself. The reconciliation of "36 Features today" against the ~50–80 expected once Candidate
 Requirements, Candidate NFRs, and the strategic review's Future Concepts/Gaps are baselined is
@@ -414,7 +414,7 @@ built, none matching its spec exactly. Five packages now exist:
 `IP-1120`/`IP-1130`/`IP-1140`/`IP-1150`/`IP-1151` (see the Implementation Packages theme below).
 
 **Update (2026-07):** Finding F-01 is **fully resolved, in two stages**. Stage 1 (`requirements-
-engineering` against DOM-002/004/005 — `reviews/requirements-domain-backfill-report.md`): zero new
+engineering` against the retired assessment, research and validation domain documents — `reviews/requirements-domain-backfill-report.md`): zero new
 baselined FR/NFR; `CR-19`/`CR-20`/`CR-21` added instead, two blocked on an ADR-0017/ADR-0029
 conflict this pass discovered. Stage 2 (direct project-owner decision, same session): `ADR-0032`
 narrows `ADR-0017`; `ADR-0033` supersedes `ADR-0029`; `CR-19`/`CR-20` promoted to baselined
@@ -869,7 +869,7 @@ done — flagged here as an open item, not silently assumed equivalent.
 
 ## Theme: Phase 6-8 review (Consistency / Dependency / Traceability, MSTR-006 §7)
 
-Scope: every document under `docs/master/`, `docs/domains/`, `docs/research/encyclopedia/`,
+Scope: every document under `docs/master/`, the domain documents (since retired), `docs/research/encyclopedia/`,
 `docs/features/`, the earlier `IMP-xxxA` package tier, `docs/architecture/`, `docs/scenarios/` (MSTR-006 §5).
 
 **Phase 6 — Consistency.** Scanned all 115 in-scope content documents (excludes the 13 `INDEX.md`/
@@ -880,7 +880,7 @@ after Phase 5 added the packages it was denying existed):
 - `FS-201` / `FS-301`: each said "no Implementation Package exists yet"; this became false once
   IMP-201A/IMP-301A were authored in Phase 5. Reworded to state the package exists as design-only
   per MSTR-006 §3, not implementation-authorizing.
-- `DOM-002`: said "no FS/IMP exist yet"; FS-201/FS-301/IMP-201A/IMP-301A all exist as documents.
+- The assessment domain document (since retired): said "no FS/IMP exist yet"; FS-201/FS-301/IMP-201A/IMP-301A all exist as documents.
   Reworded to "FS-201/FS-301 and their design-only IMP-201A/IMP-301A packages exist, but no code
   implements assessment in the simulator today" — preserving the true claim (no code) while fixing
   the false one (no documents).
@@ -893,9 +893,9 @@ back-reference was simply never added) — fixed directly, no judgment call invo
 - `FS-101`/`FS-102`/`FS-103`/`FS-104`/`FS-105`/`FS-106`/`FS-107` each gained their `IMP-xxxA`/`B`
   package in `Referenced By` (the IMP packages' `Dependencies` already correctly cited the FS).
 - `FS-201` gained `IMP-201A` and `FS-202`; `FS-301` gained `IMP-301A`.
-- `DOM-002` gained `FS-107` (which cites DOM-002 §6); `DOM-003` gained `FS-107` (same).
+- The assessment and White Cell domain documents (since retired) gained `FS-107` (which cited their §6 and §1).
 - `MSTR-001` gained `MSTR-004`; `MSTR-002` gained `MSTR-007`; `MSTR-005` gained `MSTR-006`;
-  `MSTR-006` gained `DOM-008` — each was already a real, stated `Dependencies` entry in the citing
+  `MSTR-006` gained the AI-integration domain document — each was already a real, stated `Dependencies` entry in the citing
   document, just missing from the cited document's back-reference list.
 
 **Phase 8 — Traceability.** Walked the MSTR-005 §4 chain (Training Objective → Domain → Research →
@@ -924,7 +924,7 @@ FS → IMP → Code → Tests) for all 11 Feature Specifications:
 
 > **Open question:** the 13 router/index files (`*/INDEX.md`, `R100-index.md` ... `R500-index.md`,
 > `features/feature-index.md`) carry no metadata block at all, while MSTR-006 §5 says "every
-> document in `master/`, `domains/`, ... opens with" the 7-field block. All 13 are internally
+> document in `master/`, `domains/` [since retired], ... opens with" the 7-field block. All 13 are internally
 > consistent with each other (100% omit it, none partially comply), suggesting an unstated but
 > consistently-applied convention that router/navigation pages are exempt. Flagged rather than
 > silently resolved per MSTR-006 §6 — either MSTR-006 §5 should be amended to state the router

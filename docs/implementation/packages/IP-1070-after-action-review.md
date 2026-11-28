@@ -138,7 +138,7 @@ suite.
 ## Risks
 
 - If AAR were ever treated as purely a facilitator tool in a future console change (self-assessment
-  use not designed for), DOM-002 §6's stated self-assessment mode would be silently excluded — the
+  use not designed for), [FS-201 System Behaviour (Assessment modes)](../../features/FS-201-competency-assessment.md)'s stated self-assessment mode would be silently excluded — the
   source FS-107 names this as a design requirement, not an afterthought.
 - Any future change that gives `snapshot_at()`/branch operations even a "temporary" `WorldState`
   mutation would violate the live-session replay-safety invariant this entire package depends on.
