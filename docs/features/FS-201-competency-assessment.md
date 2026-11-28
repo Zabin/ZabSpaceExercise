@@ -45,6 +45,20 @@ reporting model, and the per-cell/per-exercise and longitudinal report surfaces.
 tooling to *author or adjust* rubric tiers ([FS-202](FS-202-rubric-authoring.md), candidate), and multi-run/cohort export for
 instrument-grade research ([FS-301](FS-301-research-analytics.md)).
 
+### Deferred dimensions
+
+The three dimensions deferred from the first iteration, as defined by the retired assessment domain
+document (§4):
+
+| Dimension | What it captures | Candidate data source |
+|---|---|---|
+| **Resource economy** | Δv/SoC/sensor-tasking efficiency relative to the vignette's resource budget. | `propulsion`, `BusState` SOH history, sensor contention logs |
+| **Escalation discipline** | Were kinetic/irreversible options used proportionate to ROE and threat, with the confirm gate engaged deliberately rather than reflexively? | Order log filtered to kinetic/cyber/jam categories, ROE chip state at time of order |
+| **Time-to-decision** | How much simulated/wall time elapsed between an access window opening and the cell acting on it — a proxy for OODA-loop tightness ([R208](../research/encyclopedia/R208-ooda-loops.md)). | Eventlog timestamps vs. window open/close times |
+
+All six dimensions are designed to be derivable largely from data the engine already produces
+(eventlog, custody history, order log).
+
 ## Requirements Implemented
 
 **FR-10110** (automated non-aggregating competency rubric-tier computation) — added 2026-07,
