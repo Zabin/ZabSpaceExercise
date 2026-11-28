@@ -16,7 +16,10 @@ ui = ["fastapi>=0.162.0", "uvicorn>=0.54.0"]
 mapdata = ["basemap", "basemap-data"]
 # skyfield is an independent reference in the Phase-2 tests; httpx powers the FastAPI TestClient;
 # pillow renders the UI preview images in tools/render_screens.py.
-dev = ["pytest>=9.2.0", "hypothesis>=6.170.14", "skyfield>=1.55", "fastapi>=0.162.0", "httpx>=0.28.1", "pillow>=13.0.0", "playwright>=1.64.1"]
+# ruff is pinned exactly (not a >= floor) because it is lint tooling outside requirements.lock
+# (NFR-1510 floors must equal lock pins) and its default rule set changes between versions; keep
+# it equal to the pin in .github/workflows/ci.yml.
+dev = ["pytest>=9.2.0", "hypothesis>=6.170.14", "skyfield>=1.55", "fastapi>=0.162.0", "httpx>=0.28.1", "pillow>=13.0.0", "playwright>=1.64.1", "ruff==0.17.6"]
 
 [tool.pytest.ini_options]
 # Make the repo root importable so tests can `import spacesim...`.
@@ -27,6 +30,13 @@ markers = [
     "browser: drives the console in a headless Chromium (needs Playwright + a Chromium build; skips where absent)",
     "verifies(*ids): the requirement leaf / feature / package IDs this test verifies (FS-133)",
 ]
+
+[tool.ruff]
+# Linter configuration only (refactor packet C2): the default rule set, report-only in CI
+# (`ruff check --exit-zero`). No automatic fixes and no formatting yet; packet C3 fixes one rule
+# family at a time. No generated or vendored Python exists, so nothing is excluded beyond
+# ruff's defaults and `.gitignore`.
+target-version = "py311"   # matches requires-python
 
 [tool.setuptools.packages.find]
 include = ["spacesim*"]

@@ -31,6 +31,14 @@ jobs:
         run: |
           python -m pip install -r requirements.lock
           python -m pip install --no-deps -e .
+      # Report-only lint (refactor packet C2): prints the violation count per rule and never fails
+      # the job. ruff is not in requirements.lock, so it is pinned here; keep the pin in step with
+      # the `dev` extra in pyproject.toml.
+      - name: Lint report (ruff, report-only)
+        continue-on-error: true
+        run: |
+          python -m pip install ruff==0.17.6
+          ruff check --exit-zero --statistics .
       - name: Install Chromium for the browser tests
         run: python -m playwright install --with-deps chromium
       - name: Run the suite
