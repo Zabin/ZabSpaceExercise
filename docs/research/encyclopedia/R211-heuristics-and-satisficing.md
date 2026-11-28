@@ -4,8 +4,8 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R206](R206-bounded-rationality.md)
-> **Referenced By:** DOM-002
-> **Produces:** the vocabulary distinguishing a competent shortcut from a tradecraft gap in DOM-002's rubric
+> **Referenced By:** 
+> **Produces:** the vocabulary distinguishing a competent shortcut from a tradecraft gap in [FS-201](../../features/FS-201-competency-assessment.md)'s rubric
 > **Feature Mapping:** FS-201 (Competency Assessment)
 > **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality — the theory this topic's mechanism implements), [R207](R207-cognitive-biases.md)
 > (Cognitive Biases — the failure mode when a heuristic misfires), [R202](R202-decision-theory.md) (Decision Theory)
@@ -85,9 +85,9 @@ optimization.
 
 ## 5. Implementation Guidance
 
-- **A DOM-002 rubric should be able to credit fast, pattern-consistent decisions as competent
+- **A [FS-201](../../features/FS-201-competency-assessment.md) rubric should be able to credit fast, pattern-consistent decisions as competent
   (RPD-consistent) rather than only crediting slow, deliberate option-comparison** — a "time-to-
-  decision" metric ([R208](R208-ooda-loops.md), DOM-002 §4) read in isolation would penalize exactly the expert behavior
+  decision" metric ([R208](R208-ooda-loops.md), [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)) read in isolation would penalize exactly the expert behavior
   this topic identifies as often optimal.
 - **A future tutorial/coaching-note feature (already present per `Vignette.coaching`) can
   legitimately teach a named heuristic explicitly** (e.g. "in this scenario, satisficing on the

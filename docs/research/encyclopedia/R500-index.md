@@ -2,13 +2,13 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Forward-looking context for DOM-008 (AI Integration) and long-horizon Feature Specs. 9 topics.
+Forward-looking context for the in-world AI constraint ([MSTR-003](../../master/MSTR-003-educational-philosophy.md) §2a) and long-horizon Feature Specs. 9 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
 | [R501](R501-human-ai-teaming.md) | Human-AI Teaming | How a human operator and an AI advisor share a decision loop. | — | ✅ |
 | [R502](R502-autonomy-in-space-operations.md) | Autonomy in Space Operations | Degrees of autonomy in bus/payload operations, real and simulated. | [R501](R501-human-ai-teaming.md) | ✅ |
-| [R503](R503-ai-decision-support.md) | AI Decision Support | What an AI advisor can surface without deciding for the trainee (DOM-008 §4). | [R501](R501-human-ai-teaming.md) | ✅ |
+| [R503](R503-ai-decision-support.md) | AI Decision Support | What an AI advisor can surface without deciding for the trainee ([MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)). | [R501](R501-human-ai-teaming.md) | ✅ |
 | [R504](R504-future-space-warfare-concepts.md) | Future Space Warfare Concepts | Emerging counterspace concepts beyond the current five-D's taxonomy. | — | ✅ |
 | [R505](R505-multi-domain-operations.md) | Multi-Domain Operations | Space integrated with other domains (cyber, air, land, maritime). | [R504](R504-future-space-warfare-concepts.md) | ✅ |
 | [R506](R506-machine-reasoning.md) | Machine Reasoning | Symbolic/sub-symbolic reasoning approaches relevant to future planners. | [R503](R503-ai-decision-support.md) | ✅ |
@@ -27,7 +27,7 @@ sources include ECSS-E-ST-70-11C (spacecraft autonomy levels), NASA's DS1 Remote
 CASPER flight reports, DARPA's Mosaic Warfare and XAI program releases, the DoD JADC2 strategy and AI
 Ethical Principles, Starlink's own collision-avoidance public filing, and the peer-reviewed
 human-automation-teaming/automation-bias literature (Parasuraman, Sheridan, Wickens, Riley, Mosier,
-Skitka, Cummings, Cannon-Bowers/Salas/Converse, Newell & Simon). Each topic's DOM-008 §6 tag (in-world
+Skitka, Cummings, Cannon-Bowers/Salas/Converse, Newell & Simon). Each topic's R500 tag (in-world
 AI, coding-agent practice, both, or neither) is intact from the original draft. [R509](R509-ai-integration-patterns.md) is the
 tier's capstone, synthesizing R501-R508's findings into six reusable integration patterns without
 re-deriving their citations (see R509 §3 Sources for the per-pattern attribution). Per
@@ -38,7 +38,7 @@ across the tier: 2026-07-02.
 
 ## Tag convention
 
-Every R501-R509 topic must explicitly tag, in its Implementation Guidance section, whether the
+Every R501-R509 topic must explicitly carry the **R500 tag**, in its Implementation Guidance section, whether the
 concept it describes applies to in-world AI (Red doctrine presets today; any future advisor) or
 coding-agent practice (this repository's documentation-driven development model) or both, since
 conflating them is the most likely failure mode for this tier (a topic on "machine reasoning" could

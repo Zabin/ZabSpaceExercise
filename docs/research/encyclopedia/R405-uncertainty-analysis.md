@@ -6,7 +6,7 @@
 > **Dependencies:** [R403](R403-statistics-foundations.md)
 > **Referenced By:** —
 > **Produces:** the vocabulary for reporting a derived metric's uncertainty rather than a bare point estimate
-> **Feature Mapping:** DOM-005 (Validation Framework), any future analytics feature deriving a summary statistic from a Monte Carlo sweep ([R407](R407-monte-carlo-methods.md))
+> **Feature Mapping:** [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md), any future analytics feature deriving a summary statistic from a Monte Carlo sweep ([R407](R407-monte-carlo-methods.md))
 > **Related Topics:** [R403](R403-statistics-foundations.md) (Statistics Foundations), [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the typical source
 > of the sample this topic's uncertainty bounds are computed over), [R408](R408-sensitivity-analysis.md) (Sensitivity Analysis —
 > a complementary technique addressing input uncertainty rather than sampling uncertainty)
@@ -26,7 +26,7 @@ hidden behind a single confident-looking number.
 
 Covers: point estimates vs. uncertainty bounds, sampling vs. parameter uncertainty, uncertainty
 propagation through a derived/composite metric, and precision-vs-accuracy, applied to reporting a
-Monte Carlo–derived or DOM-002 composite metric. Does **not** cover: the sampling method that
+Monte Carlo–derived or [FS-201](../../features/FS-201-competency-assessment.md) composite metric. Does **not** cover: the sampling method that
 generates the runs an uncertainty bound is computed over ([R407](R407-monte-carlo-methods.md)'s job),
 or the technique for probing how much an *input* parameter's uncertainty (as opposed to sampling
 count) moves an output ([R408](R408-sensitivity-analysis.md)'s job, referenced here only as the
@@ -58,10 +58,10 @@ changes if the uncertain parameter is varied.
 
 **Propagating uncertainty through a derived calculation.** NIST TN 1297's **combined standard
 uncertainty** concept states this formally: if a reported metric is computed by combining several
-measured quantities (e.g. an aggregate "mission effectiveness" combining several DOM-002 dimensions),
+measured quantities (e.g. an aggregate "mission effectiveness" combining several [FS-201](../../features/FS-201-competency-assessment.md) dimensions),
 the combined metric's uncertainty is generally larger than any single input's uncertainty, not
 smaller — a feature that combines multiple uncertain inputs into one number without acknowledging
-this compounds DOM-002 §5's caution against composite scores with an additional, distinct
+this compounds [GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s caution against composite scores with an additional, distinct
 uncertainty-hiding problem.
 
 **Distinguishing precision from accuracy.** A result can be reported with many decimal places
@@ -100,7 +100,7 @@ section.
   uncertainty bound (e.g. a confidence interval, per NIST TN 1297's "expanded uncertainty" concept)
   alongside the point estimate**, not the point estimate alone — and should state the N (number of
   seeded runs) the bound is based on.
-- **A composite metric combining several DOM-002 dimensions should propagate, not hide, the combined
+- **A composite metric combining several [FS-201](../../features/FS-201-competency-assessment.md) dimensions should propagate, not hide, the combined
   uncertainty** (NIST TN 1297's combined-standard-uncertainty rule) — report the composite's own
   uncertainty bound, which should generally be wider than any single input dimension's, rather than
   presenting the composite with false precision.
@@ -110,7 +110,7 @@ section.
 
 ## 6. Feature Mapping
 
-DOM-005 (Validation Framework) and any future Monte Carlo–derived analytics feature are the direct
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and any future Monte Carlo–derived analytics feature are the direct
 consumers.
 
 ## 7. Related Topics

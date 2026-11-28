@@ -8,7 +8,7 @@
 > **Produces:** the land-component command/staff vocabulary (mission command, IPB/recon-pull, the
 > D3A targeting cycle, sustainment-as-culmination, deception/EW discipline, battle rhythm) used as
 > an analogy source for orbital mission planning, vignette authoring, and Red doctrine design
-> **Feature Mapping:** DOM-003 (White Cell Framework), DOM-009 (Doctrine Development Framework),
+> **Feature Mapping:** [GDS-05](../../architecture/05-functional-requirements.md), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md),
 > vignette authoring (`docs/scenarios/`), `docs/training/11-vignette-playbooks.md`
 > **Related Topics:** [R301](R301-campaign-design.md) (Campaign Design), [R302](R302-operational-art.md)
 > (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R309](R309-center-of-gravity-analysis.md)
@@ -171,7 +171,7 @@ alone; the U.S. Department of Defense's unclassified Combined Joint All-Domain C
 ([Wayback](https://web.archive.org/web/2026/https://media.defense.gov/2022/Mar/17/2002958406/-1/-1/1/SUMMARY-OF-THE-JOINT-ALL-DOMAIN-COMMAND-AND-CONTROL-STRATEGY.pdf)))
 extends the same logic across
 domains including space. **Orbital analogy:** White Cell's own facilitation cadence — pause/resume,
-inject scheduling, AAR review (DOM-003 §5) — is functionally a battle rhythm for the exercise itself;
+inject scheduling, AAR review ([GDS-05 `FR-W3`](../../architecture/05-functional-requirements.md)) — is functionally a battle rhythm for the exercise itself;
 a vignette that requires Blue to integrate EW, ISR tasking, and kinetic/DE effects toward one
 objective is exercising combined-arms judgment in miniature, and any future feature cueing
 terrestrial fires from space-based ISR would be implementing CJADC2's actual integration problem, not
@@ -262,13 +262,13 @@ for this simulator rather than an unrelated body of tactics.
   five-D taxonomy** (`engine/effects.py`), not as an ad hoc narrative flourish — reuse the existing
   deceive/deny distinction rather than inventing a new one.
 - **Don't model "battle rhythm" as literal real-time meeting overhead in a vignette** — it is White
-  Cell's own facilitation discipline (DOM-003 §5), not a trainee-facing mechanic. The combined-arms
+  Cell's own facilitation discipline ([GDS-05 `FR-W3`](../../architecture/05-functional-requirements.md)), not a trainee-facing mechanic. The combined-arms
   lesson should come from requiring genuinely multi-effect-category objectives, not from simulating
   staff-meeting friction.
 
 ## 6. Feature Mapping
 
-DOM-003 (White Cell Framework) and DOM-009 (Doctrine Development Framework) are the direct
+[GDS-05](../../architecture/05-functional-requirements.md) and [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) are the direct
 consumers; vignette authoring (`docs/scenarios/`) and `docs/training/11-vignette-playbooks.md` are
 where this topic's analogies should surface in author-facing and player-facing material. No
 dedicated FS exists yet for a reserve mechanic or a deception/denial inject-authoring UI

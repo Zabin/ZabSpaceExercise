@@ -16,7 +16,7 @@ the OODA loop made structural). 14 topics.
 | [R207](R207-cognitive-biases.md) | Cognitive Biases | Confirmation bias, anchoring, etc. — relevant to custody misjudgment. | [R205](R205-cognitive-psychology-foundations.md) | ✅ Done |
 | [R208](R208-ooda-loops.md) | OODA Loops | Observe-Orient-Decide-Act as the simulator's structural unit of play. | [R206](R206-bounded-rationality.md) | ✅ Done |
 | [R209](R209-planning-theory.md) | Planning Theory | How plans are formed/revised under partial information. | [R202](R202-decision-theory.md), [R206](R206-bounded-rationality.md) | ✅ Done |
-| [R210](R210-decision-support-systems.md) | Decision Support Systems | What a decision aid can/should/shouldn't do (ties DOM-008 §4). | [R202](R202-decision-theory.md) | ✅ Done |
+| [R210](R210-decision-support-systems.md) | Decision Support Systems | What a decision aid can/should/shouldn't do (ties [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)). | [R202](R202-decision-theory.md) | ✅ Done |
 | [R211](R211-heuristics-and-satisficing.md) | Heuristics and Satisficing | "Good enough" decision strategies under bounded rationality. | [R206](R206-bounded-rationality.md) | ✅ Done |
 | [R212](R212-multi-criteria-decision-analysis.md) | Multi-Criteria Decision Analysis | Scoring options against conflicting criteria — COA selection. | [R202](R202-decision-theory.md) | ✅ Done |
 | [R213](R213-signaling-theory.md) | Signaling Theory | How actions convey intent to an observer — escalation dynamics. | [R203](R203-game-theory.md) | ✅ Done |
@@ -34,7 +34,7 @@ and von Neumann & Morgenstern (1944) for [R214](R214-utility-theory.md) — rath
 uncited name-drop. Bare in-file section cross-references that shifted under the new §2 Scope
 insertion (e.g. [R208](R208-ooda-loops.md)'s "see §4 below" → §5, [R212](R212-multi-criteria-decision-analysis.md)'s
 "sensitivity check from §2" → §3) were checked and corrected tier-wide. Grounded in MSTR-003
-(educational philosophy), DOM-002 (assessment), DOM-005 (validation), and DOM-008 (AI integration)
-— each topic exists because one of those domain documents cites it as the formal justification for
+(educational philosophy), [FS-201](../../features/FS-201-competency-assessment.md) (assessment), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation), and [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) (AI integration)
+— each topic exists because one of those documents cites it as the formal justification for
 a design choice (e.g. MSTR-003 §10 cites [R201](R201-probability-and-bayesian-reasoning.md)-[R214](R214-utility-theory.md)
 collectively as the basis for judgment-under-uncertainty pedagogy).

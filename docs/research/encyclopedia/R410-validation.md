@@ -5,8 +5,8 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R409](R409-verification.md)
 > **Referenced By:** [R404](R404-measurement-theory.md), [R412](R412-survey-and-assessment-instrument-design.md)
-> **Produces:** the formal validation vocabulary backing DOM-005's entire framework — the gap DOM-005 §1 identifies relative to this project's already-strong verification
-> **Feature Mapping:** DOM-005 (Validation Framework, entire document), the worked `AUDIT-2026-06-UI-TTC.md` §2 precedent DOM-005 §4 cites
+> **Produces:** the formal validation vocabulary backing [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s entire framework — the gap [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) identifies relative to this project's already-strong verification
+> **Feature Mapping:** [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation, entire document), the worked `AUDIT-2026-06-UI-TTC.md` §2 precedent [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) cites
 > **Related Topics:** [R409](R409-verification.md) (Verification — the distinct, comparatively strong discipline this topic
 > contrasts with), [R404](R404-measurement-theory.md) (Measurement Theory — instrument validation as a special case of this
 > topic), [R412](R412-survey-and-assessment-instrument-design.md) (Survey and Assessment Instrument Design)
@@ -17,10 +17,10 @@
 
 ## 1. Purpose
 
-DOM-005 is built entirely around the verification/validation distinction ([R409](R409-verification.md) vs. this topic) and
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) is built entirely around the verification/validation distinction ([R409](R409-verification.md) vs. this topic) and
 names validation as this project's actual gap relative to its already-strong verification practice.
-This topic supplies the formal validation vocabulary and methodology DOM-005's framework rests on,
-grounded in the worked example DOM-005 §4 already cites: the `AUDIT-2026-06-UI-TTC.md` §2
+This topic supplies the formal validation vocabulary and methodology [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s framework rests on,
+grounded in the worked example [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) already cites: the `AUDIT-2026-06-UI-TTC.md` §2
 power-calibration bug.
 
 ## 2. Scope
@@ -59,7 +59,7 @@ in this simulator's domain than in, say, orbital mechanics (where Skyfield/sgp4 
 validated reference for propagation) since adversarial effect-resolution behavior (jam/cyber success
 probabilities) has less authoritative public ground truth to validate against.
 
-**The `AUDIT-2026-06-UI-TTC.md` §2 precedent as the worked validation method.** DOM-005 §4 cites this
+**The `AUDIT-2026-06-UI-TTC.md` §2 precedent as the worked validation method.** [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) cites this
 specific audit as the concrete instance of validation work already done in this project: a
 power-calibration formula was checked not just for internal consistency (verification) but for
 whether its calibrated output matched the physically expected behavior across the input range,
@@ -75,7 +75,7 @@ regime is not automatically validated for an extended one.
 ### Sources
 
 - *This project's own worked validation precedent* —
-  [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 (the power-calibration bug DOM-005
+  [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 (the power-calibration bug [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
   §4 cites).
 - Uses the Boehm (1981) and Sargent V&V-framework citations already fully recorded at
   [R409](R409-verification.md) §3's Sources subsection (Boehm's "building the right product"
@@ -86,7 +86,7 @@ regime is not automatically validated for an extended one.
 The verification/validation distinction is formalized in military modeling-and-simulation practice as
 VV&A (Verification, Validation, and Accreditation, per DoDI 5000.61, cited at [R406](R406-modeling-practices.md) §3) precisely
 because a heavily-verified-but-unvalidated simulator can produce confident-looking but substantively
-wrong training conclusions — this is the exact failure mode DOM-005 names as this project's current
+wrong training conclusions — this is the exact failure mode [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) names as this project's current
 risk, and the `AUDIT-2026-06-UI-TTC.md` precedent shows the risk is concrete, not hypothetical, for
 this codebase.
 
@@ -99,7 +99,7 @@ carried from [R409](R409-verification.md)); no additional sources introduced in 
 
 - **Treat any future fidelity claim (a jam/cyber/engage formula's calibration, a propagator's
   accuracy) as requiring validation work distinct from and in addition to its existing verification
-  tests** — per DOM-005 §1's framing, a green test suite is not validation evidence.
+  tests** — per [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s framing, a green test suite is not validation evidence.
 - **Use the `AUDIT-2026-06-UI-TTC.md` §2 method as the template for future validation audits**:
   check a formula's output against an independent physical/doctrinal expectation across its input
   range, specifically probing edge cases a purely internal-consistency check would not surface.
@@ -113,7 +113,7 @@ carried from [R409](R409-verification.md)); no additional sources introduced in 
 
 ## 6. Feature Mapping
 
-DOM-005 (Validation Framework) in its entirety is the direct consumer.
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) in its entirety is the direct consumer.
 
 ## 7. Related Topics
 

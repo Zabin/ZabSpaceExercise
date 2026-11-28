@@ -6,9 +6,9 @@
 > **Dependencies:** [R401](R401-experimental-design-and-controls.md)
 > **Referenced By:** —
 > **Produces:** the vocabulary for stating a falsifiable claim about a feature or vignette change before measuring it
-> **Feature Mapping:** DOM-005 (Validation Framework), DOM-002 (Assessment Framework)
+> **Feature Mapping:** [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md), [FS-201](../../features/FS-201-competency-assessment.md)
 > **Related Topics:** [R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls), [R403](R403-statistics-foundations.md) (Statistics Foundations — the
-> test of a stated hypothesis), DOM-002 (Assessment Framework — the six measurement dimensions are
+> test of a stated hypothesis), [FS-201](../../features/FS-201-competency-assessment.md) (assessment — the six measurement dimensions are
 > candidate dependent variables)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A/B foundational falsifiability + significance-testing sources — see §3 Sources)
@@ -42,13 +42,13 @@ it, not merely what would confirm it
 ([Stanford Encyclopedia of Philosophy, "Karl Popper"](https://plato.stanford.edu/entries/popper/)).
 A useful hypothesis states a specific, checkable prediction ("the fleet-rail alarm badge reduces
 median time-to-decision by at least 10%") rather than a vague expectation ("the alarm badge should
-help") — DOM-002 §4's time-to-decision metric is exactly the kind of dependent variable that makes a
+help") — [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s time-to-decision metric is exactly the kind of dependent variable that makes a
 falsifiable claim possible; an unfalsifiable claim cannot be wrong, which means it also cannot be
 validated.
 
 **Independent, dependent, and confound variables.** The independent variable is what the
 experimenter deliberately changes (the feature under test); the dependent variable is what is
-measured as a result (one of DOM-002 §4's six dimensions, e.g. window discipline or
+measured as a result (one of [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s six dimensions, e.g. window discipline or
 escalation discipline); a confound ([R401](R401-experimental-design-and-controls.md)) is an uncontrolled variable that could also explain a
 change in the dependent variable — a hypothesis statement should name all three explicitly.
 
@@ -64,7 +64,7 @@ implementer already wants to ship.
 
 **Operationalizing a vague claim into a measurable variable.** Most candidate hypotheses about this
 simulator's features start vague ("does this make the exercise more realistic," "does this improve
-learning") — operationalizing means picking a specific, measurable proxy (e.g. one of DOM-002's six
+learning") — operationalizing means picking a specific, measurable proxy (e.g. one of [FS-201](../../features/FS-201-competency-assessment.md)'s six
 dimensions, or a survey instrument per [R412](R412-survey-and-assessment-instrument-design.md)) and explicitly stating the proxy's limits, since no
 single proxy fully captures a vague construct like "realism" or "learning."
 
@@ -95,12 +95,12 @@ introduced in this section.
 
 ## 5. Implementation Guidance
 
-- **Any future feature-effectiveness study (DOM-005 §4) should state its hypothesis, independent
+- **Any future feature-effectiveness study ([GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)) should state its hypothesis, independent
   variable, dependent variable, and null hypothesis explicitly before measurement**, not after —
   stating these after seeing the data risks post-hoc rationalization ([R207](R207-cognitive-biases.md)'s confirmation bias) of
   whatever the data happened to show, and violates Popper's falsifiability requirement by making the
   claim unfalsifiable in practice even if it is falsifiable in principle.
-- **Prefer DOM-002 §4's six measurement dimensions as off-the-shelf dependent variables** rather than
+- **Prefer [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s six measurement dimensions as off-the-shelf dependent variables** rather than
   inventing a new, unvalidated metric per study — reusing an already-discussed dimension keeps
   separate studies comparable to each other.
 - **Flag any "realism" or "learning" claim as an operationalization choice, not a direct
@@ -110,9 +110,9 @@ introduced in this section.
 
 ## 6. Feature Mapping
 
-DOM-005 (Validation Framework) and DOM-002 (Assessment Framework) are the direct consumers.
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and [FS-201](../../features/FS-201-competency-assessment.md) are the direct consumers.
 
 ## 7. Related Topics
 
 [R401](R401-experimental-design-and-controls.md) (Experimental Design and Controls, the preceding step), [R403](R403-statistics-foundations.md) (Statistics Foundations, how a
-stated hypothesis gets tested against data), DOM-002 (Assessment Framework).
+stated hypothesis gets tested against data), [FS-201](../../features/FS-201-competency-assessment.md).

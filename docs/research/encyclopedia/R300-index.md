@@ -2,7 +2,7 @@
 
 [↑ Encyclopedia index](INDEX.md)
 
-Justifies White Cell and scenario design (DOM-003, DOM-009). 20 topics.
+Justifies White Cell and scenario design ([GDS-05](../../architecture/05-functional-requirements.md), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)). 20 topics.
 
 | ID | Title | Scope (one line) | Depends on | Status |
 |---|---|---|---|---|
@@ -24,7 +24,7 @@ Justifies White Cell and scenario design (DOM-003, DOM-009). 20 topics.
 | [R316](R316-joint-and-combined-operations.md) | Joint and Combined Operations Perspective | Joint command relationships, JPP, coalition/combined ops, MDO/JADC2, joint fires/targeting, and each domain's space dependencies. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md) | ✅ |
 | [R317](R317-space-operator-perspective.md) | Space Operator Perspective (Historical Evolution) | How the space operator's own mindset evolved — support era → warfighting domain → SDA → orbital-ops tradecraft → C2/autonomy → joint integration → decision-making → future trends. | [R301](R301-campaign-design.md), [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md) | ✅ |
 | [R318](R318-attribution-confidence-and-public-messaging.md) | Attribution Confidence and Public Messaging in Space Incidents | The operational craft between detecting an ambiguous incident and choosing a response tier (silence/protest/public statement); grounds the already-computed-but-unconsumed `attribution_signal` side effect. | [R213](R213-signaling-theory.md), [R303](R303-deterrence-theory.md) | ✅ |
-| [R319](R319-red-behavior-validation-methodology.md) | Red Behavior Validation Methodology | A concrete fidelity-checking method for `redai.py`/AI-Red doctrine presets, extending R308's qualitative principle; grounds the future DOM-005 validation framework. | [R308](R308-red-teaming-methodology.md) | ✅ |
+| [R319](R319-red-behavior-validation-methodology.md) | Red Behavior Validation Methodology | A concrete fidelity-checking method for `redai.py`/AI-Red doctrine presets, extending R308's qualitative principle; grounds the future [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) validation framework. | [R308](R308-red-teaming-methodology.md) | ✅ |
 | [R320](R320-commercial-space-actors-and-strategic-ambiguity.md) | Commercial Space Actors and Strategic Ambiguity | Third-party/commercial-actor targeting ambiguity as a strategic-frame extension of R312 — closes GAP-03. | [R312](R312-space-strategy.md) | ✅ |
 
 **Strategic-review gap-closure pass (2026-07-01).** The Independent Strategic Review Board report
@@ -59,11 +59,11 @@ one `### Sources` subsection (live URL + Wayback snapshot + accessed date) and i
 the doctrinal/legal/historical claim site, with [R303](R303-deterrence-theory.md)'s single
 secondary-sourced claim and [R316](R316-joint-and-combined-operations.md) §3.12's single-source
 government-report claim flagged inline per the methodology's §3 single-source rule rather than
-mis-cited as primary. Grounded in DOM-003 (White Cell Framework — §7/§10's red-teaming and
+mis-cited as primary. Grounded in [GDS-05](../../architecture/05-functional-requirements.md) (White Cell — §7/§10's red-teaming and
 wargaming citations, plus [R316](R316-joint-and-combined-operations.md)'s command-relationship and
-JPP vocabulary for any future multi-cell/coalition session design), DOM-009 (Doctrine Development
+JPP vocabulary for any future multi-cell/coalition session design), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (Doctrine Development
 Framework — the translation pipeline these topics' real-world doctrine ultimately feeds), and
-DOM-008 §3 (Red AI design principles, the direct consumer of
+[GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (Red AI design principles, the direct consumer of
 [R303](R303-deterrence-theory.md)/[R308](R308-red-teaming-methodology.md)/[R312](R312-space-strategy.md)'s strategic-posture
 and red-teaming concepts).
 

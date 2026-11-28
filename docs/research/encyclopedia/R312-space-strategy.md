@@ -56,7 +56,7 @@ strategic-theory frame that variation sits inside.
 
 **Strategic culture shapes what "rational" Red behavior looks like.** A Red doctrine preset
 (`redai.py`) implicitly encodes assumptions about which strategic school Red's modeled behavior
-follows — DOM-008 §3's legibility requirement extends to this: White Cell should be able to state not
+follows — [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s legibility requirement extends to this: White Cell should be able to state not
 just "which preset" but "which strategic posture this preset is meant to represent," since that
 framing is what makes Red's in-exercise behavior doctrinally interpretable rather than just a
 parameter set.
@@ -101,7 +101,7 @@ single actor's tactical interest.
   left implicit — this gives a White Cell facilitator language for the highest-level debrief
   question ("what was actually being contested here, strategically") beyond the tactical-level AAR.
 - **A new Red doctrine preset's strategic framing should be documented alongside its tactical
-  parameters** — per DOM-008 §3's legibility principle extended to the strategic level, a preset
+  parameters** — per [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s legibility principle extended to the strategic level, a preset
   named only by aggressiveness level (e.g. "aggressive") without a stated strategic posture is less
   useful to a facilitator than one that also states what strategic assumption the aggressiveness
   reflects.

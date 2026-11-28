@@ -9,7 +9,7 @@
 > **Produces:** the formative/summative distinction and wargame-debrief-question framing that grounds
 > FS-201's competency-assessment design and the AAR's own debrief practice
 > **Feature Mapping:** FS-201 (Competency Assessment), `session/assessment.py`, FR-10110 (competency
-> rubric-tier computation), DOM-002 (assessment domain framework)
+> rubric-tier computation), [FS-201](../../features/FS-201-competency-assessment.md) (competency assessment)
 > **Related Topics:** [R603](R603-simulation-based-learning-and-debriefing.md) (Simulation-Based
 > Learning & Debriefing, the discussion structure this topic's assessment sits inside),
 > [R208](R208-ooda-loops.md) (OODA Loops, already the basis for FS-201's time-to-decision metric),
@@ -130,7 +130,7 @@ tradition (Perla) resists reducing the exercise to a score.
 FS-201 (Competency Assessment) and `session/assessment.py` are this topic's most direct code-level
 targets — the formative/non-aggregating design VR-2010 already confirmed traces to Scriven's
 distinction; the Level 2/Level 3 framing directly informs how BL-0019/BL-0020 should eventually be
-scoped. DOM-002 (the assessment domain framework) is this topic's requirements-side counterpart.
+scoped. [FS-201](../../features/FS-201-competency-assessment.md) (competency assessment) is this topic's requirements-side counterpart.
 
 ## 7. Related Topics
 

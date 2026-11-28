@@ -6,10 +6,10 @@
 > **Dependencies:** —
 > **Referenced By:** [R402](R402-hypotheses-and-variables.md), [R411](R411-human-subjects-research.md)
 > **Produces:** the vocabulary for isolating one variable's effect on an outcome when evaluating a vignette, Red preset, or assessment instrument change
-> **Feature Mapping:** DOM-005 (Validation Framework), any future feature-effectiveness study (e.g. "does the new fleet-rail alarm badge actually improve time-to-decision")
+> **Feature Mapping:** [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md), any future feature-effectiveness study (e.g. "does the new fleet-rail alarm badge actually improve time-to-decision")
 > **Related Topics:** [R402](R402-hypotheses-and-variables.md) (Hypotheses and Variables — the next step after a controlled design),
 > [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the seeded-repetition mechanism that supplies a control's repeatability
-> in this simulator), DOM-005 (Validation Framework)
+> in this simulator), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A foundational experimental-design and military-OR texts — see §3 Sources)
 
@@ -96,7 +96,7 @@ military OR analysts of the Morse/Kimball era rarely had access to.
 
 ## 5. Implementation Guidance
 
-- **Any future feature-effectiveness claim (DOM-005 §4's validation method) should be evaluated under
+- **Any future feature-effectiveness claim ([GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)'s validation method) should be evaluated under
   a controlled comparison**: same vignette, same Red preset, same seed where feasible, varying only
   the feature under test — an uncontrolled "we shipped it and players seemed happier" claim does not
   meet this bar.
@@ -115,9 +115,9 @@ military OR analysts of the Morse/Kimball era rarely had access to.
 
 ## 6. Feature Mapping
 
-DOM-005 (Validation Framework) and any future feature-effectiveness study are the direct consumers.
+[GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) and any future feature-effectiveness study are the direct consumers.
 
 ## 7. Related Topics
 
 [R402](R402-hypotheses-and-variables.md) (Hypotheses and Variables, the next step), [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods, this simulator's
-seeded-repetition control mechanism), DOM-005 (Validation Framework).
+seeded-repetition control mechanism), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md).

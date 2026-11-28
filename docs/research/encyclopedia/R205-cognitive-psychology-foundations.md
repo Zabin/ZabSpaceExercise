@@ -4,10 +4,10 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R206](R206-bounded-rationality.md), [R207](R207-cognitive-biases.md), [R208](R208-ooda-loops.md), DOM-007
-> **Produces:** the perception/memory/attention vocabulary underlying [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/DOM-007
-> **Feature Mapping:** FS-101 (Mission Planning), DOM-007 (Human Factors)
-> **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R207](R207-cognitive-biases.md) (Cognitive Biases), DOM-007 (Human Factors
+> **Referenced By:** [R206](R206-bounded-rationality.md), [R207](R207-cognitive-biases.md), [R208](R208-ooda-loops.md)
+> **Produces:** the perception/memory/attention vocabulary underlying [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/[GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)
+> **Feature Mapping:** FS-101 (Mission Planning), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (Human Factors)
+> **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R207](R207-cognitive-biases.md) (Cognitive Biases), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (Human Factors
 > Framework — the UI-facing consumer of this topic's perception/attention vocabulary)
 
 > **Last Reviewed:** 2026-07-02
@@ -21,7 +21,7 @@ The operator console (fleet rail, command menu, 2D map, telemetry graphs) is a p
 attention-management interface, not just a data display — how an operator notices a degraded
 station, an expiring access window, or a confidence band crossing the weapons-quality threshold is a
 cognitive-psychology question before it is a UI-design question. This topic gives the implementer
-the substrate vocabulary (perception, attention, working memory) that [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/DOM-007 build on.
+the substrate vocabulary (perception, attention, working memory) that [R206](R206-bounded-rationality.md)/[R207](R207-cognitive-biases.md)/[GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) build on.
 
 ## 2. Scope
 
@@ -29,7 +29,7 @@ Covers the perception/attention/working-memory substrate (selective attention, c
 recognition-vs-recall, cognitive load) that operator-console design must respect. Does **not** cover
 the decision-making layer built on this substrate ([R206](R206-bounded-rationality.md), Bounded
 Rationality), systematic judgment distortions ([R207](R207-cognitive-biases.md), Cognitive Biases),
-or UI-specific implementation beyond the console (DOM-007, the direct consumer).
+or UI-specific implementation beyond the console ([GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), the direct consumer).
 
 ## 3. Concepts
 
@@ -55,7 +55,7 @@ higher cognitive load for no operational benefit.
 **Cognitive load and dual-task interference.** Splitting attention across two demanding mental
 tasks (e.g., a complex maneuver-planning calculation alongside real-time alarm monitoring) degrades
 performance on both relative to doing them separately — relevant to why time-pressure/urgency design
-in vignettes (DOM-001's progression) should be a deliberate pedagogical lever, not an unintentional
+in vignettes ([MSTR-003](../../master/MSTR-003-educational-philosophy.md) and [Vignette framework](../../vignettes/00-vignette-framework.md)'s progression) should be a deliberate pedagogical lever, not an unintentional
 side effect of cluttered UI.
 
 ### Sources
@@ -88,12 +88,12 @@ safety-critical operations, not space-sim-specific inventions.
 
 ## 6. Feature Mapping
 
-FS-101 (Mission Planning) and DOM-007 (Human Factors Framework) are the direct consumers — any new
+FS-101 (Mission Planning) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) are the direct consumers — any new
 console panel should be checked against this topic's attention/working-memory constraints before
 being added.
 
 ## 7. Related Topics
 
 [R206](R206-bounded-rationality.md) (Bounded Rationality, the decision-making layer built on this perceptual substrate), [R207](R207-cognitive-biases.md)
-(Cognitive Biases, systematic perceptual/judgment distortions), DOM-007 (Human Factors Framework, the
+(Cognitive Biases, systematic perceptual/judgment distortions), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (human factors, the
 UI-facing application of this topic).

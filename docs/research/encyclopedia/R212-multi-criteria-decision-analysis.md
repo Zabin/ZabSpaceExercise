@@ -76,14 +76,14 @@ sensitivity this topic raises.
 ## 5. Implementation Guidance
 
 - **A future COA-comparison feature must let the operator see and adjust the weighting, not present
-  a single computed "best" option as ground truth** — per DOM-008 §4, a fixed hidden weighting that
+  a single computed "best" option as ground truth** — per [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md), a fixed hidden weighting that
   resolves the comparison *for* the trainee crosses from decision support into decision-making.
 - **If implementing weighted-sum scoring, run the sensitivity check from §3/[R408](R408-sensitivity-analysis.md) before presenting
   any ranking as robust** — and surface that sensitivity to the operator (e.g. "Option A wins under
   most reasonable weightings; Option B wins only if Δv is weighted very heavily") rather than hiding
   it.
 - **Don't force ROE/legal-risk criteria onto the same numeric scale as Δv/time without an explicit,
-  documented justification** — per DOM-009 §4, legal/ROE norms are load-bearing, not a flavor
+  documented justification** — per [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md), legal/ROE norms are load-bearing, not a flavor
   variable to be casually monetized into the same units as fuel cost.
 
 ## 6. Feature Mapping

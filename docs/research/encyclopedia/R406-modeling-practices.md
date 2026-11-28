@@ -6,10 +6,10 @@
 > **Dependencies:** —
 > **Referenced By:** [R407](R407-monte-carlo-methods.md), [R409](R409-verification.md)
 > **Produces:** the documentation-discipline vocabulary that makes a model's assumptions auditable rather than implicit in code
-> **Feature Mapping:** every `engine/` subsystem (`Propagator`, `AccessProvider`, `EffectResolver`, the doctrine presets in `redai.py`), DOM-005 (Validation Framework), DOM-009 (Doctrine Development Framework)
+> **Feature Mapping:** every `engine/` subsystem (`Propagator`, `AccessProvider`, `EffectResolver`, the doctrine presets in `redai.py`), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)
 > **Related Topics:** [R409](R409-verification.md) (Verification — confirming a model matches its own spec, the next step
-> after this topic's documentation discipline), [R410](R410-validation.md) (Validation), DOM-009 (Doctrine Development
-> Framework — the doctrine-to-parameter translation this topic's assumption-documentation discipline
+> after this topic's documentation discipline), [R410](R410-validation.md) (Validation), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (doctrine development —
+> the doctrine-to-parameter translation this topic's assumption-documentation discipline
 > directly supports)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A/B modeling-and-simulation practice sources — see §3 Sources)
@@ -72,7 +72,7 @@ Department of Defense's own institutional requirement for this is formal, not as
 domain," and references MIL-STD-3022 for minimum VV&A *documentation* requirements specifically so a
 model's assumptions are reviewable by someone other than its author. A model whose key assumptions
 live only in a contributor's head (or in comments scattered through implementation code) is not
-auditable in this sense — DOM-009's doctrine-to-parameter translation pipeline depends on a
+auditable in this sense — [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-to-parameter translation pipeline depends on a
 `redai.py` preset's strategic assumptions being stated somewhere a reviewer can check them against the
 doctrine source, not just inferable from reading the parameter values.
 
@@ -115,7 +115,7 @@ this section.
   equivalent explicit statement.
 - **A new `redai.py` doctrine preset's modeling assumptions (which strategic posture, what
   information access, what aggressiveness calibration) should be documented alongside the preset**,
-  per [R312](R312-space-strategy.md)'s strategic-culture concept and DOM-009's translation-pipeline requirement — not left
+  per [R312](R312-space-strategy.md)'s strategic-culture concept and [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s translation-pipeline requirement — not left
   inferable only from reading the parameter values.
 - **Resist adding a vignette-specific special case to engine logic; route it through content data
   instead** — per CLAUDE.md's "content is data" invariant, this is this topic's parsimony principle
@@ -124,10 +124,10 @@ this section.
 
 ## 6. Feature Mapping
 
-Every `engine/` subsystem with a documented seam interface, DOM-005, and DOM-009 are the direct
+Every `engine/` subsystem with a documented seam interface, [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md), and [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) are the direct
 consumers.
 
 ## 7. Related Topics
 
-[R409](R409-verification.md) (Verification, the next step after assumption documentation), [R410](R410-validation.md) (Validation), DOM-009
-(Doctrine Development Framework).
+[R409](R409-verification.md) (Verification, the next step after assumption documentation), [R410](R410-validation.md) (Validation), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)
+(doctrine development).

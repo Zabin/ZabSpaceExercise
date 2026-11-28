@@ -5,8 +5,8 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R407](R407-monte-carlo-methods.md)
 > **Referenced By:** [R404](R404-measurement-theory.md), [R405](R405-uncertainty-analysis.md)
-> **Produces:** the technique DOM-005 §5 names for checking an assessment instrument's "sensitivity to manipulation"
-> **Feature Mapping:** DOM-005 §5 (instrument validation), Red-preset and vignette-difficulty calibration
+> **Produces:** the technique [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) names for checking an assessment instrument's "sensitivity to manipulation"
+> **Feature Mapping:** [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) (instrument validation), Red-preset and vignette-difficulty calibration
 > **Related Topics:** [R407](R407-monte-carlo-methods.md) (Monte Carlo Methods — the batch mechanism sensitivity analysis sweeps
 > across), [R404](R404-measurement-theory.md) (Measurement Theory — the instrument-validation use of this technique), [R405](R405-uncertainty-analysis.md)
 > (Uncertainty Analysis — parameter uncertainty, the complementary concern to sampling uncertainty)
@@ -17,7 +17,7 @@
 
 ## 1. Purpose
 
-DOM-005 §5 lists "sensitivity to manipulation" as one of three checks for validating a future
+[FS-201 Validity checks](../../features/FS-201-competency-assessment.md) lists "sensitivity to manipulation" as one of three checks for validating a future
 assessment instrument, citing this topic by ID. This document supplies the general sensitivity-
 analysis technique that check is a specific application of: systematically varying one input to see
 how much it moves an output, used both to find an instrument's gameable inputs and, more broadly, to
@@ -26,7 +26,7 @@ find which of a model's parameters actually matter.
 ## 2. Scope
 
 Covers: the general sensitivity-analysis technique (local vs. global, one-at-a-time), and its
-specific application to an assessment instrument's gameable inputs (DOM-005 §5's "sensitivity to
+specific application to an assessment instrument's gameable inputs ([FS-201 Validity checks](../../features/FS-201-competency-assessment.md)'s "sensitivity to
 manipulation" check). Does **not** cover: the Monte Carlo batch mechanism this technique typically
 sweeps across ([R407](R407-monte-carlo-methods.md), assumed established here), or the broader
 reliability/validity vocabulary this check is one instance of
@@ -44,7 +44,7 @@ one parameter actually drives the outcome.
 a few that meaningfully drive the output — sensitivity analysis surfaces this, which is directly
 useful for `redai.py` preset design: a parameter that sensitivity analysis shows barely moves Red's
 behavior is either redundant or mis-wired, and a parameter that moves Red's behavior a great deal
-deserves the most documentation/calibration attention (per DOM-009's doctrine-translation rigor).
+deserves the most documentation/calibration attention (per [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-translation rigor).
 
 **Local/one-at-a-time (OAT) vs. global sensitivity analysis.** Andrea Saltelli et al.'s standard
 reference text,
@@ -60,7 +60,7 @@ checked globally (across its full 0-1 or equivalent range, and ideally jointly w
 parameters) since a vignette author might plausibly set it anywhere in that range and its effect
 could interact with another preset parameter.
 
-**Sensitivity to manipulation, as DOM-005 §5 names it: does gaming an input inflate a score without
+**Sensitivity to manipulation, as [FS-201 Validity checks](../../features/FS-201-competency-assessment.md) names it: does gaming an input inflate a score without
 improving the real underlying construct.** This is sensitivity analysis applied to an assessment
 instrument's gameable inputs specifically, and maps directly onto Samuel Messick's foundational
 validity-theory concept of **construct-irrelevant variance** — one of his two named threats to
@@ -106,9 +106,9 @@ introduced in this section.
 
 - **Apply [R407](R407-monte-carlo-methods.md)'s Monte Carlo batch mechanism while sweeping one parameter at a time to perform
   sensitivity analysis on a `redai.py` preset's tunable parameters** — this identifies which
-  parameters most need careful, doctrine-grounded calibration (DOM-009) vs. which are low-stakes.
-- **Before trusting a new DOM-002 measurement dimension or future assessment-instrument item, run
-  the sensitivity-to-manipulation check from DOM-005 §5**: construct a deliberately gaming-oriented
+  parameters most need careful, doctrine-grounded calibration ([Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)) vs. which are low-stakes.
+- **Before trusting a new [FS-201](../../features/FS-201-competency-assessment.md) measurement dimension or future assessment-instrument item, run
+  the sensitivity-to-manipulation check from [FS-201 Validity checks](../../features/FS-201-competency-assessment.md)**: construct a deliberately gaming-oriented
   play sequence and confirm the score doesn't inflate disproportionately to the actual underlying
   construct it claims to measure — per Messick's framework, treat any such inflation as
   construct-irrelevant variance, a first-class validity failure, not a minor edge case.
@@ -120,7 +120,7 @@ introduced in this section.
 
 ## 6. Feature Mapping
 
-DOM-005 §5 (instrument validation) and `redai.py` preset calibration work are the direct consumers.
+[FS-201 Validity checks](../../features/FS-201-competency-assessment.md) (instrument validation) and `redai.py` preset calibration work are the direct consumers.
 
 ## 7. Related Topics
 

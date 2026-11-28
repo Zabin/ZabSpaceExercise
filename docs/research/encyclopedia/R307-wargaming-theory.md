@@ -4,11 +4,11 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R308](R308-red-teaming-methodology.md), DOM-003
+> **Referenced By:** [R308](R308-red-teaming-methodology.md)
 > **Produces:** the validity vocabulary behind what conclusions a White-Cell-run exercise can responsibly support
-> **Feature Mapping:** FS-106 (White Cell Dashboard), DOM-003
-> **Related Topics:** [R308](R308-red-teaming-methodology.md) (Red Teaming Methodology), DOM-003 (White Cell Framework, the direct
-> consumer), DOM-005 (Validation Framework)
+> **Feature Mapping:** FS-106 (White Cell Dashboard), [GDS-05](../../architecture/05-functional-requirements.md)
+> **Related Topics:** [R308](R308-red-teaming-methodology.md) (Red Teaming Methodology), [GDS-05](../../architecture/05-functional-requirements.md) (White Cell, the direct
+> consumer), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 1
 
@@ -16,7 +16,7 @@
 
 ## 1. Purpose
 
-DOM-003 §10 already cites this topic by ID for "what makes a wargame's conclusions valid, informs
+The retired White Cell domain document §10 already cited this topic by ID for "what makes a wargame's conclusions valid, informs
 how much White Cell intervention is appropriate before the exercise stops teaching what it claims
 to." This document supplies that content: the methodological literature on what a wargame can and
 cannot validly demonstrate, so White Cell facilitation guidance and any future assessment claim
@@ -49,16 +49,16 @@ rules, this is what these specific participants did and why."
 wargame whose purpose is insight-generation for *trainees* (practicing judgment, per MSTR-003) —
 distinct from analytical wargaming whose purpose is generating *generalizable findings* for force-
 design or doctrine decisions, a distinction Perla's framework treats as governing what conclusions a
-given game can support. DOM-004/DOM-005's research-use extension would, if pursued, need to
+given game can support. [FS-301](../../features/FS-301-research-analytics.md)'s research-use extension would, if pursued, need to
 explicitly state which mode a given study is operating in, since the validity standards differ
 sharply (an analytical claim needs the rigor [R401](R401-experimental-design-and-controls.md)-[R413](R413-data-analysis-and-reporting.md) describe; a PME insight does not, but also
 shouldn't be oversold as one).
 
 **The facilitator's intervention changes what the game can validly demonstrate.** Every White Cell
-inject, clock adjustment, or hand-tuned Red posture (DOM-003 §4-7) is a deliberate departure from a
+inject, clock adjustment, or hand-tuned Red posture ([GDS-05 `FR-W4`/`FR-W8`](../../architecture/05-functional-requirements.md), [GDS-05 `FR-W3`](../../architecture/05-functional-requirements.md), and the retired White Cell domain document §4–§7) is a deliberate departure from a
 "closed," fully-scripted exercise — appropriate and even necessary for pedagogy, but it means the
 exercise's outcome reflects facilitator choices as much as participant skill, and any claim drawn
-from the outcome must account for that (this is precisely why DOM-003 §10 frames facilitator
+from the outcome must account for that (this is precisely why the retired White Cell domain document §10 frames facilitator
 restraint as a wargaming-validity question, not just a facilitation-style preference).
 
 **Free play vs. rigid (scripted) wargaming.** Perla's typology distinguishes a rigid wargame, which
@@ -89,20 +89,20 @@ as predictive when they were never designed to be."
 - **Any AAR or assessment feature must avoid language implying a single exercise run "proves" a
   trainee's real-world competency** — per §3's insight-generation framing, report observed behavior
   in *this* run, with the bounded claim that is actually defensible, not an inflated one.
-- **A future research-use feature (FS-301, DOM-004) studying exercise outcomes across many runs must
+- **A future research-use feature (FS-301, [FS-301](../../features/FS-301-research-analytics.md)) studying exercise outcomes across many runs must
   explicitly declare whether it's making an insight-generation claim (PME-appropriate) or an
   analytical claim (requiring [R401](R401-experimental-design-and-controls.md)-[R413](R413-data-analysis-and-reporting.md)'s full rigor)** — and must not silently upgrade the former
   into the latter.
-- **White Cell facilitation guidance (DOM-003) should explicitly note that heavy intervention,
+- **White Cell facilitation guidance ([GDS-05](../../architecture/05-functional-requirements.md)) should explicitly note that heavy intervention,
   while pedagogically valid, narrows what a given run's outcome can be used to claim** — a feature
   exposing "how much was this run facilitator-steered" (e.g. inject count/timing in the AAR) would
   usefully support this kind of honest self-assessment.
 
 ## 6. Feature Mapping
 
-DOM-003 (White Cell Framework) and FS-106 (White Cell Dashboard) are the direct consumers.
+[GDS-05](../../architecture/05-functional-requirements.md) and FS-106 (White Cell Dashboard) are the direct consumers.
 
 ## 7. Related Topics
 
-[R308](R308-red-teaming-methodology.md) (Red Teaming Methodology, the adversarial-design half of wargaming validity), DOM-003 (the
-direct consumer), DOM-005 (Validation Framework, the rigor standard for any analytical claim).
+[R308](R308-red-teaming-methodology.md) (Red Teaming Methodology, the adversarial-design half of wargaming validity), [GDS-05](../../architecture/05-functional-requirements.md) (the
+direct consumer), [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (validation, the rigor standard for any analytical claim).

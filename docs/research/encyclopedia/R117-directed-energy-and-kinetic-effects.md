@@ -277,7 +277,7 @@ tension this topic surfaces rather than resolves (see §5 and Open Questions in 
   `AccessProvider._weapon_predicate` (or its ground-DE analog) with a duplicate reachability check.
 - **Mark any new irreversible/debris-generating effect with the matching `reversible=False`,
   `kinetic=True` (or analogous) flags** so downstream consequence-confirm UI (the kinetic
-  consequence-confirm dialog) and assessment (DOM-002) treat it with the same gravity. A DE-damage
+  consequence-confirm dialog) and assessment ([FS-201](../../features/FS-201-competency-assessment.md)) treat it with the same gravity. A DE-damage
   effect is not `kinetic=True` (no debris) but should still gate through the same consequence-
   confirm pattern given its irreversibility.
 - **A `DebrisField.persistence_estimate` (`BL-0077`/B11) should be a pure function of altitude

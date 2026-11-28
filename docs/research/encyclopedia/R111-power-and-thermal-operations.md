@@ -4,11 +4,11 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** [R101](R101-orbital-mechanics-for-operations.md), [R103](R103-satellite-command-and-control.md)
-> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), DOM-007, FS-105
+> **Referenced By:** [R113](R113-attitude-determination-and-control.md), [R114](R114-command-and-data-handling.md), [R131](R131-space-environment-and-space-weather-operations.md), [R137](R137-bus-and-payload-parameter-catalog.md), FS-105
 > **Produces:** implementation constraints for [`engine/bus.py`](../../../spacesim/engine/bus.py), [`engine/busmodel.py`](../../../spacesim/engine/busmodel.py)
 > **Feature Mapping:** FS-105 (Spacecraft Operations)
 > **Related Topics:** [`docs/reviews/AUDIT-2026-06-UI-TTC.md`](../../reviews/AUDIT-2026-06-UI-TTC.md) §2 (the precedent worked example),
-> DOM-005 §4 (fidelity-claim validation method), DOM-007 §4 (causality must be surfaced)
+> [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) (fidelity-claim validation method), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), [GDS-08 §5](../../architecture/08-ui-architecture.md) (causality must be surfaced)
 > **Last Reviewed:** 2026-07-05
 > **Primary Sources Consulted:** 3
 
@@ -48,7 +48,7 @@ is the single most important fact this topic exists to convey.
 
 **Eclipse drives drain causally, and that causality must be visible.** `soh_snapshot` exposing
 `in_eclipse` exists because a falling SoC number with no visible cause is operationally
-indistinguishable from a bug, even when it's correct physics — see DOM-007 §4.
+indistinguishable from a bug, even when it's correct physics — see [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../../architecture/08-ui-architecture.md).
 
 **Dead/decoupled fields are a known, documented class of bug.** `entities.AssetResources.power_w`
 is never read (the model uses `charge_rate_per_s` instead); `propulsion.propellant_frac` is
@@ -94,12 +94,12 @@ Real LEO bus power budgets are designed around a target DoD (per NASA cell-quali
 commonly 20-40%, well shallower than 60%+, to preserve battery cycle life across 5-7 year missions
 running ~5,000-16 cycles/year from 30-40-minute eclipses) and an eclipse fraction that varies with
 orbit inclination/altitude and season. Operators monitor SoC trend *relative to the orbit's eclipse
-geometry*, not as an isolated number — exactly the causal-legibility requirement in DOM-007 §4.
+geometry*, not as an isolated number — exactly the causal-legibility requirement in [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../../architecture/08-ui-architecture.md).
 
 ## 5. Implementation Guidance
 
 - **Before tuning a charge/drain constant, compute the resulting steady-state DoD over a full orbit
-  and sanity-check it against a realistic LEO range** — this is the concrete DOM-005 §4 validation
+  and sanity-check it against a realistic LEO range** — this is the concrete [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md) validation
   method applied to this subsystem; don't tune by "looks reasonable in a quick test run."
 - **A regression test should pin a baseline SoC range**, the way `test_power_calibration.py` pins
   "baseline SoC ≥ 0.30 over several orbits" — a power-model change without an accompanying
@@ -121,7 +121,7 @@ geometry*, not as an isolated number — exactly the causal-legibility requireme
 
 ## 6. Feature Mapping
 
-FS-105 (Spacecraft Operations) is the direct consumer. DOM-007 (causality surfacing) and DOM-005
+FS-105 (Spacecraft Operations) is the direct consumer. [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) (causality surfacing) and [GDS-06 NFR-19](../../architecture/06-non-functional-requirements.md)
 (fidelity validation method) both apply directly to any future power/thermal work. The forthcoming
 Vignette Creator Feature Specification (`docs/pipeline/backlog.md` `BL-0052`) depends on this
 topic's power-budget-by-class subsection above, and must resolve the `power_w` dead-field question
@@ -131,4 +131,4 @@ before treating it as an authorable bus parameter.
 
 `AUDIT-2026-06-UI-TTC.md` §2 (the full incident writeup this topic distills), [R101](R101-orbital-mechanics-for-operations.md) §3 (the
 eclipse-fraction model this subsystem consumes), [R113](R113-attitude-determination-and-control.md) (ADCS — pointing affects array
-illumination, a coupling not yet modeled), DOM-007 §4 (causality-must-be-surfaced UI principle).
+illumination, a coupling not yet modeled), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) and [GDS-08 §5](../../architecture/08-ui-architecture.md) (causality-must-be-surfaced UI principle).

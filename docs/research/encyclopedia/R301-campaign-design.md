@@ -4,11 +4,11 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md), [R316](R316-joint-and-combined-operations.md), DOM-009
+> **Referenced By:** [R302](R302-operational-art.md), [R305](R305-mission-analysis.md), [R312](R312-space-strategy.md), [R316](R316-joint-and-combined-operations.md)
 > **Produces:** the structural vocabulary behind multi-vignette mission-set progression
 > **Feature Mapping:** FS-106 (White Cell Dashboard), vignette authoring (`docs/scenarios/`)
-> **Related Topics:** [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R312](R312-space-strategy.md) (Space Strategy), DOM-001
-> §4 (vignette progression), DOM-009 (doctrine-to-content translation)
+> **Related Topics:** [R302](R302-operational-art.md) (Operational Art), [R305](R305-mission-analysis.md) (Mission Analysis), [R312](R312-space-strategy.md) (Space Strategy), [MSTR-003](../../master/MSTR-003-educational-philosophy.md), [Vignette framework](../../vignettes/00-vignette-framework.md)
+> §4 (vignette progression), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (doctrine-to-content translation)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 1
 
@@ -56,7 +56,7 @@ Specification scope, not an extension of AAR.
 ([R309](R309-center-of-gravity-analysis.md)). A campaign-design document should identify the
 *strategic* objective threading through the sequence (e.g. "maintain assured access to a specific
 orbital regime") distinct from each vignette's local, tactical objectives — this is the throughline
-DOM-009's translation pipeline needs in order to keep a mission-set's vignettes doctrinally coherent
+[Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s translation pipeline needs in order to keep a mission-set's vignettes doctrinally coherent
 rather than independently-designed episodes loosely bundled.
 
 ### Sources
@@ -77,7 +77,7 @@ vignette grouping should aspire to model, even at PME-appropriate scale.
 
 - **A new mission-set vignette group should state its persistent strategic objective explicitly** in
   the vignette's `intro_brief` or a new metadata field, distinct from each member vignette's own
-  `objectives` — this gives DOM-009's doctrine-translation step something concrete to check
+  `objectives` — this gives [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md)'s doctrine-translation step something concrete to check
   coherence against.
 - **If branching campaign progression is ever built, model it as a branch/sequel structure per
   JP 5-0 §III.4** (state transfer between vignettes, conditional vignette selection keyed to the
@@ -96,4 +96,4 @@ needs to see the sequence); a future campaign-progression feature would be new F
 ## 7. Related Topics
 
 [R302](R302-operational-art.md) (Operational Art, the tactics-to-strategy connective layer within one operation), [R305](R305-mission-analysis.md) (Mission
-Analysis), [R312](R312-space-strategy.md) (Space Strategy, the strategic end a campaign serves), DOM-009 (translation pipeline).
+Analysis), [R312](R312-space-strategy.md) (Space Strategy, the strategic end a campaign serves), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (translation pipeline).

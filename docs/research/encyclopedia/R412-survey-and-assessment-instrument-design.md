@@ -5,11 +5,11 @@
 > **Status:** ✅ Done
 > **Dependencies:** [R404](R404-measurement-theory.md), [R410](R410-validation.md)
 > **Referenced By:** —
-> **Produces:** the instrument-design vocabulary for any future facilitator-judged rubric or trainee self-assessment survey under DOM-002's three assessment modes
-> **Feature Mapping:** DOM-002 §5 (facilitator and self-assessment modes specifically — the two of the three modes that depend on a designed instrument rather than pure automation)
+> **Produces:** the instrument-design vocabulary for any future facilitator-judged rubric or trainee self-assessment survey under [FS-201](../../features/FS-201-competency-assessment.md)'s three assessment modes
+> **Feature Mapping:** [GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md), [GDS-07 §8](../../architecture/07-data-model.md) (facilitator and self-assessment modes specifically — the two of the three modes that depend on a designed instrument rather than pure automation)
 > **Related Topics:** [R404](R404-measurement-theory.md) (Measurement Theory — reliability/validity, the criteria this topic's
 > instruments must satisfy), [R410](R410-validation.md) (Validation — the three-check method this topic's instruments are
-> validated against), DOM-002 (Assessment Framework — the three assessment modes this topic serves
+> validated against), [FS-201](../../features/FS-201-competency-assessment.md) (assessment — the three assessment modes this topic serves
 > two of)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A foundational psychometric-instrument sources — see §3 Sources)
@@ -18,7 +18,7 @@
 
 ## 1. Purpose
 
-DOM-002 §5 names three assessment modes: automated, facilitator, and self. The automated mode reads
+[GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md) and [GDS-07 §8](../../architecture/07-data-model.md) names three assessment modes: automated, facilitator, and self. The automated mode reads
 directly from the eventlog/engine state; the facilitator and self-assessment modes require an
 actual designed instrument — a rubric a facilitator fills out, or a survey a trainee completes — that
 doesn't yet exist as a concrete artifact. This topic gives the implementer the instrument-design
@@ -27,7 +27,7 @@ vocabulary needed to build one that is reliable and valid ([R404](R404-measureme
 ## 2. Scope
 
 Covers: item writing, response-scale design, piloting/item revision, socially-desirable-bias
-avoidance, and cross-mode triangulation, applied to DOM-002 §5's facilitator and self-assessment
+avoidance, and cross-mode triangulation, applied to [GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s facilitator and self-assessment
 instruments. Does **not** cover: the reliability/validity criteria an instrument must satisfy
 (assumed established at [R404](R404-measurement-theory.md)) or the broader validation methodology
 these instruments are checked against ([R410](R410-validation.md), also assumed established) — this
@@ -39,7 +39,7 @@ applied to.
 **Item writing: each question should measure one thing clearly.** A poorly written rubric item
 ("how well did Blue manage the engagement, generally?") conflates multiple constructs (custody
 quality, escalation discipline, resource economy might all be implicated) into one ambiguous score —
-good item writing isolates one DOM-002 dimension per item, consistent with [R404](R404-measurement-theory.md)'s internal-
+good item writing isolates one [FS-201](../../features/FS-201-competency-assessment.md) dimension per item, consistent with [R404](R404-measurement-theory.md)'s internal-
 consistency concern.
 
 **Response scale design.** Rensis Likert's foundational 1932 dissertation,
@@ -69,7 +69,7 @@ you reverse a planned order before its execution window?") is less prone to this
 checkable against the automated-mode data the same dimension might also be measured by.
 
 **Triangulating across assessment modes.** Where the same underlying construct (e.g. escalation
-discipline) is assessed by more than one of DOM-002's three modes (automated + facilitator-judged),
+discipline) is assessed by more than one of [FS-201](../../features/FS-201-competency-assessment.md)'s three modes (automated + facilitator-judged),
 comparing the two is itself a validity check ([R410](R410-validation.md)) on the facilitator instrument — a large,
 persistent disagreement between the automated measure and the facilitator's rubric score on the same
 sessions suggests one of the two is measuring something different than intended.
@@ -105,7 +105,7 @@ introduced in this section.
 
 ## 5. Implementation Guidance
 
-- **Any future facilitator rubric or trainee self-assessment survey should isolate one DOM-002
+- **Any future facilitator rubric or trainee self-assessment survey should isolate one [FS-201](../../features/FS-201-competency-assessment.md)
   dimension per item** rather than writing compound, ambiguous items — per [R404](R404-measurement-theory.md)'s internal-
   consistency concern.
 - **Use a Likert-style ordinal scale with a deliberately chosen number of points** (per Likert's own
@@ -123,9 +123,9 @@ introduced in this section.
 
 ## 6. Feature Mapping
 
-DOM-002 §5's facilitator and self-assessment modes are the direct consumers; this topic describes a
+[GDS-05 `FR-A1`](../../architecture/05-functional-requirements.md) and [GDS-07 §8](../../architecture/07-data-model.md)'s facilitator and self-assessment modes are the direct consumers; this topic describes a
 not-yet-built artifact (the instrument itself), not an existing feature.
 
 ## 7. Related Topics
 
-[R404](R404-measurement-theory.md) (Measurement Theory), [R410](R410-validation.md) (Validation), DOM-002 (Assessment Framework).
+[R404](R404-measurement-theory.md) (Measurement Theory), [R410](R410-validation.md) (Validation), [FS-201](../../features/FS-201-competency-assessment.md).

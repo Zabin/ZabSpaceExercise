@@ -58,7 +58,7 @@ they are harder for a low-quality type to fake
 **Pooling vs. signaling equilibria.** If two genuinely different actor types (e.g., a Red cell
 testing defenses vs. one preparing a real strike) would take the same observable action, an observer
 cannot distinguish them from the action alone (a pooling equilibrium) — an ambiguous RPO approach
-(DOM-003 §4's inject) is the concrete in-sim instance: a deliberately ambiguous action is one where
+([GDS-05 `FR-W4`/`FR-W8`](../../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../../architecture/08-ui-architecture.md)'s inject) is the concrete in-sim instance: a deliberately ambiguous action is one where
 the designer has placed it in a pooling region by intent, and Blue's task is to gather enough
 additional, costly-to-fake evidence (custody, [R102](R102-space-domain-awareness.md)) to separate the types.
 
@@ -87,7 +87,7 @@ precisely why real escalation-management doctrine (and the 2022 ASAT-test morato
 ## 5. Implementation Guidance
 
 - **A new effect category or capability should state explicitly what it signals, not only what it
-  does** — per [R304](R304-escalation-dynamics.md)/DOM-009 §4, an escalation-dynamics feature needs this stated to compute an
+  does** — per [R304](R304-escalation-dynamics.md)/[Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md), an escalation-dynamics feature needs this stated to compute an
   escalation weight correctly (`PAYLOADS`' existing `escalation_weight` field in `cyber.py` is the
   concrete precedent: it already encodes a signaling-cost judgment, not just a physical-effect
   judgment).
@@ -95,7 +95,7 @@ precisely why real escalation-management doctrine (and the 2022 ASAT-test morato
   stay genuinely ambiguous in its engine-level data** — don't let an implementation detail (e.g. a
   hidden flag distinguishing "this is the hostile variant") leak into anything Blue can query,
   or the pooling equilibrium the inject is designed to create collapses by implementation accident.
-- **A future Red-intent-signal assessment feature must stay within DOM-008 §4's advisor constraint**
+- **A future Red-intent-signal assessment feature must stay within [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s advisor constraint**
   — surfacing "this pattern of behavior is consistent with signal type X with some uncertainty" is
   acceptable; resolving the signal for the player is not.
 
@@ -107,4 +107,4 @@ effect categories.
 ## 7. Related Topics
 
 [R203](R203-game-theory.md) (Game Theory, the formal foundation), [R304](R304-escalation-dynamics.md) (Escalation Dynamics, the direct application), [R117](R117-directed-energy-and-kinetic-effects.md)
-(the highest-stakes signaling category), DOM-009 §4 (legal/ROE load-bearing norms).
+(the highest-stakes signaling category), [Vignette framework, Doctrine to content](../../vignettes/00-vignette-framework.md) (legal/ROE load-bearing norms).

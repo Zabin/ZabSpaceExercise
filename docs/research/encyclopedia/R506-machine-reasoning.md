@@ -9,18 +9,18 @@
 > **Feature Mapping:** any future `redai.py` enhancement or planning-assistance feature proposing reasoning beyond the current rule-based doctrine presets
 > **Related Topics:** [R503](R503-ai-decision-support.md) (AI Decision Support), `engine/redai.py` (the existing rule-based
 > reasoning this topic contrasts with more sophisticated approaches), [R507](R507-autonomous-planning-systems.md) (Autonomous Planning
-> Systems), DOM-008 §3/§5
+> Systems), [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md), [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), [MSTR-006 §4](../../master/MSTR-006-governance-principles.md)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 3 (Tier A/B — foundational AI theory + DARPA program + DoD policy — see §3 Sources)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** both — directly relevant to in-world AI (a future `redai.py` enhancement) and to
+**R500 tag:** both — directly relevant to in-world AI (a future `redai.py` enhancement) and to
 coding-agent practice (§5's note about an agent extending Red's reasoning).
 
 ## 1. Purpose
 
-`redai.py`'s current doctrine presets are rule-based/data-parameterized (DOM-008 §3). If a future
+`redai.py`'s current doctrine presets are rule-based/data-parameterized ([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)). If a future
 proposal ever suggests making Red's (or a future advisor's) reasoning "smarter" via a more
 sophisticated reasoning approach, this topic supplies the vocabulary to evaluate that proposal against
 what it would actually require — particularly whether it's compatible with the engine's determinism
@@ -31,7 +31,7 @@ invariant, which is the single most load-bearing constraint any such proposal mu
 Covers: the symbolic-vs-sub-symbolic reasoning distinction as it bears on this engine's determinism/
 legibility requirements, and the real-world explainability tension named by DARPA's XAI program and
 DoD's AI ethics principles. Does **not** cover: the decision-authority question of whether reasoning
-output may be acted on autonomously ([R503](R503-ai-decision-support.md)/DOM-008 §4's job — orthogonal
+output may be acted on autonomously ([R503](R503-ai-decision-support.md)/[MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s job — orthogonal
 to this topic per §3 below), or the planning-algorithm mechanics of *how* a symbolic or sub-symbolic
 reasoner would generate a multi-step plan ([R507](R507-autonomous-planning-systems.md)'s job) — this
 topic is about the reasoning-representation choice itself, not decision authority or planning method.
@@ -48,7 +48,7 @@ problem-solving as generating and progressively modifying symbol structures unti
 reached. A rule-based doctrine preset (the existing `redai.py` pattern: data-parameterized thresholds
 and decision rules) is symbolic reasoning in exactly this sense — its logic is inspectable, its
 behavior is traceable to a specific rule firing, and it is naturally compatible with the engine's
-determinism and legibility requirements (DOM-008 §3).
+determinism and legibility requirements ([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)).
 
 **Sub-symbolic reasoning: learned statistical models (e.g. neural networks) without explicit rules.**
 A sub-symbolic approach (e.g. a trained policy network deciding Red's actions) trades inspectability
@@ -62,7 +62,7 @@ methods (deep learning) are typically the least explainable, and the most explai
 This tension is fundamentally harder to reconcile with the engine's `(initial_state, eventlog, seed)
 → byte-identical state` invariant (CLAUDE.md) unless the trained model itself is frozen and treated as
 a pure deterministic function of its inputs, and is much harder to make legible to a White Cell
-facilitator (DOM-008 §3's legibility principle) than a rule-based preset's named parameters.
+facilitator ([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s legibility principle) than a rule-based preset's named parameters.
 
 **Hybrid approaches: sub-symbolic perception feeding a symbolic decision layer.** Some real-world
 systems use a learned model to interpret noisy input and a symbolic rule layer to make the actual
@@ -77,14 +77,14 @@ deployed "such that relevant personnel possess an appropriate understanding of t
 development processes, and operational methods applicable to AI capabilities, including with
 transparent and auditable methodologies, data sources, and design procedures"
 ([U.S. Army, "DOD Adopts 5 Principles of Artificial Intelligence Ethics," 24 Feb 2020](https://www.army.mil/article/233690/dod_adopts_5_principles_of_artificial_intelligence_ethics)).
-This is a direct, real-world institutional analog to DOM-008 §3's "Red AI should be legible to White
+This is a direct, real-world institutional analog to [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s "Red AI should be legible to White
 Cell" requirement — the same traceability concern the defense establishment formally requires of any
 fielded military AI system applies to this simulator's much smaller-scale Red-AI legibility goal.
 
 **The reasoning-approach choice is independent of the Human-AI-teaming and decision-support
 constraints ([R501](R501-human-ai-teaming.md)/[R503](R503-ai-decision-support.md)).** Choosing symbolic over sub-symbolic reasoning is a determinism/legibility
-question (DOM-008 §3, and the DARPA XAI / DoD Traceable-principle tension above); the advisor-not-
-decider constraint (DOM-008 §4) is a decision-authority question — a future proposal could in
+question ([GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), and the DARPA XAI / DoD Traceable-principle tension above); the advisor-not-
+decider constraint ([MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)) is a decision-authority question — a future proposal could in
 principle satisfy one without the other, and both should be checked independently.
 
 ### Sources
@@ -128,14 +128,14 @@ Principles 2020); no additional sources introduced in this section.
   even then loses much of the legibility a rule-based preset has (the same accuracy/explainability
   tradeoff DARPA XAI names, §3).
 - **Prefer symbolic, rule-based extensions to `redai.py`'s existing pattern over sub-symbolic
-  alternatives**, consistent with DOM-008 §3's legibility principle and the DoD Traceable AI
+  alternatives**, consistent with [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md)'s legibility principle and the DoD Traceable AI
   principle's real-world precedent (§3) — a more sophisticated rule set (more conditions, more nuanced
   thresholds) is a smaller, more auditable step than introducing a learned model.
-- **Coding-agent note (DOM-008 §5):** an agent asked to make Red "smarter" should default to symbolic
+- **Coding-agent note ([MSTR-006 §4](../../master/MSTR-006-governance-principles.md)):** an agent asked to make Red "smarter" should default to symbolic
   rule extension and should explicitly flag, rather than silently implement, any proposal that would
   require relaxing determinism for a sub-symbolic approach.
 - **Evaluate the reasoning-approach question (this topic) and the decision-authority question
-  (DOM-008 §4/[R503](R503-ai-decision-support.md)) independently** for any future AI-related proposal — satisfying one does not
+  ([MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)/[R503](R503-ai-decision-support.md)) independently** for any future AI-related proposal — satisfying one does not
   imply the other.
 
 ## 6. Feature Mapping
@@ -145,4 +145,4 @@ Any future `redai.py` enhancement or planning-assistance feature is the direct c
 
 ## 7. Related Topics
 
-[R503](R503-ai-decision-support.md) (AI Decision Support), `engine/redai.py`, [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), DOM-008 §3/§5.
+[R503](R503-ai-decision-support.md) (AI Decision Support), `engine/redai.py`, [R507](R507-autonomous-planning-systems.md) (Autonomous Planning Systems), [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md) and [MSTR-006 §4](../../master/MSTR-006-governance-principles.md).

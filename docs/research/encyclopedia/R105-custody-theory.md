@@ -4,10 +4,10 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R102](R102-space-domain-awareness.md)
-> **Referenced By:** [R104](R104-collection-management.md), [R109](R109-sensor-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R119](R119-space-situational-data-fusion.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), DOM-002, FS-103
+> **Referenced By:** [R104](R104-collection-management.md), [R109](R109-sensor-operations.md), [R115](R115-electronic-warfare-in-space-operations.md), [R116](R116-cyber-operations-against-space-systems.md), [R117](R117-directed-energy-and-kinetic-effects.md), [R119](R119-space-situational-data-fusion.md), [R127](R127-conjunction-assessment-and-collision-avoidance.md), FS-103
 > **Produces:** implementation constraints for [`engine/custody.py`](../../../spacesim/engine/custody.py)
 > **Feature Mapping:** FS-103 (Custody Management)
-> **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), MSTR-004 Glossary (custody, weapons-quality track), DOM-002 §4 (custody quality as an assessment dimension)
+> **Related Topics:** [R102](R102-space-domain-awareness.md) (SDA), MSTR-004 Glossary (custody, weapons-quality track), [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md), [GDS-07 §8](../../architecture/07-data-model.md) (custody quality as an assessment dimension)
 > **Last Reviewed:** 2026-06-27
 > **Primary Sources Consulted:** 1
 
@@ -82,14 +82,14 @@ the highest bar."
 - **Any new effect category that requires custody as a precondition must specify which confidence
   tier it requires** (mere detection vs. weapons-quality vs. something in between) explicitly in its
   Feature Specification — don't leave this as an implicit assumption.
-- **Assessment features (DOM-002) measuring "custody quality" should distinguish "engaged a
+- **Assessment features ([FS-201](../../features/FS-201-competency-assessment.md)) measuring "custody quality" should distinguish "engaged a
   weapons-quality track" from "engaged after only a bare detection"** — this is precisely the
-  speculative-vs-disciplined distinction DOM-002 §4 calls for.
+  speculative-vs-disciplined distinction [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md) calls for.
 
 ## 6. Feature Mapping
 
 FS-103 (Custody Management) is the direct owner. [R104](R104-collection-management.md) (Collection Management), [R115](R115-electronic-warfare-in-space-operations.md)-[R117](R117-directed-energy-and-kinetic-effects.md) (effect
-categories with custody preconditions), and DOM-002 (assessment) are all downstream consumers of
+categories with custody preconditions), and [FS-201](../../features/FS-201-competency-assessment.md) (assessment) are all downstream consumers of
 this model.
 
 ## 7. Related Topics

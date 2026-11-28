@@ -4,7 +4,7 @@
 > **Version:** 1.1
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), [R318](R318-attribution-confidence-and-public-messaging.md), DOM-009
+> **Referenced By:** [R304](R304-escalation-dynamics.md), [R312](R312-space-strategy.md), [R318](R318-attribution-confidence-and-public-messaging.md)
 > **Produces:** the doctrinal vocabulary behind ROE-gated kinetic authorization as a deterrence-preserving design
 > **Feature Mapping:** FS-105 (Spacecraft Operations), vignette ROE design
 > **Related Topics:** [R304](R304-escalation-dynamics.md) (Escalation Dynamics), [R213](R213-signaling-theory.md) (Signaling Theory), [R312](R312-space-strategy.md) (Space Strategy),
@@ -103,7 +103,7 @@ real counterspace strategy discussions, not abstractions invented for this simul
   default Red behavior).
 - **A future Red-AI doctrine preset modeling deterrence failure (a Red posture that escalates despite
   Blue's capability) should be designed as a deliberate, named scenario variant** (testing whether
-  Blue's signaling/posture was credible), not an unexplained behavior change — per DOM-008 §3, Red
+  Blue's signaling/posture was credible), not an unexplained behavior change — per [GDS-06 NFR-3](../../architecture/06-non-functional-requirements.md) and [GDS-06 NFR-9](../../architecture/06-non-functional-requirements.md), Red
   presets must stay legible to White Cell.
 - **Don't conflate "Blue has ROE authorization for kinetic response" with "Blue should use it"** — a
   vignette teaching deterrence discipline should reward credible *restraint* (maintaining the

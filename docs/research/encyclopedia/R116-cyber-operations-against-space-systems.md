@@ -61,7 +61,7 @@ which is `reversible` (the safe-mode recovery chain lifts it) but high-escalatio
 
 **Attribution is a scored property, not a fixed label.** `attribution_score()` exists because
 attribution in cyber is graded (covert/ambiguous/overt by vector bias, modified by detection), not
-binary — directly analogous to custody confidence ([R105](R105-custody-theory.md)) and DoD escalation discipline (DOM-002):
+binary — directly analogous to custody confidence ([R105](R105-custody-theory.md)) and DoD escalation discipline ([FS-201](../../features/FS-201-competency-assessment.md)):
 cyber attribution is itself an uncertain quantity an analyst assesses, not a ground-truth flag the
 engine simply reveals.
 

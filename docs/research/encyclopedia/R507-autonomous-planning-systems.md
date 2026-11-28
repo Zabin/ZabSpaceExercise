@@ -9,13 +9,13 @@
 > **Feature Mapping:** any future auto-planning or auto-COA-generation feature proposal (distinct from and going beyond the human-driven COA-comparison feature in [R311](R311-course-of-action-analysis.md))
 > **Related Topics:** [R502](R502-autonomy-in-space-operations.md) (Autonomy in Space Operations), [R506](R506-machine-reasoning.md) (Machine Reasoning), [R311](R311-course-of-action-analysis.md) (Course of
 > Action Analysis — the human-driven comparison feature this topic's auto-generation concept goes
-> beyond), DOM-008 §4
+> beyond), [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)
 > **Last Reviewed:** 2026-07-02
 > **Primary Sources Consulted:** 2 (Tier A/B real flight-precedent sources — see §3 Sources)
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** in-world AI primarily (a hypothetical future trainee-facing or White-Cell-facing
+**R500 tag:** in-world AI primarily (a hypothetical future trainee-facing or White-Cell-facing
 auto-planning feature); coding-agent implications noted in §5.
 
 ## 1. Purpose
@@ -71,7 +71,7 @@ since the design-risk profile differs substantially between them.
 **Plan adaptation/replanning under changing conditions.** A more autonomous planning system might not
 just generate an initial plan but adapt it as conditions change during execution — CASPER's continuous
 onboard replanning (§3 above) is exactly this pattern in its real precedent form. This raises the
-decision-authority question (DOM-008 §4) acutely: an adapting plan that re-decides without operator
+decision-authority question ([MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)) acutely: an adapting plan that re-decides without operator
 sign-off each time is functionally closer to level-4 autonomous decision-making ([R210](R210-decision-support-systems.md)/[R503](R503-ai-decision-support.md)) than a
 one-time initial-plan suggestion would be, even if each individual adaptation is framed as a
 "recommendation" — this is true of CASPER's real design (it does not ask permission per replan) and
@@ -131,7 +131,7 @@ sources introduced in this section.
   one.
 - **A future plan-adaptation/replanning feature must require explicit operator sign-off on each
   adaptation**, not silently re-decide like CASPER's real onboard replanning does, to stay within
-  DOM-008 §4's advisor-only constraint — treat repeated silent re-adaptation as functionally level-4
+  [MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md)'s advisor-only constraint — treat repeated silent re-adaptation as functionally level-4
   even if each step is individually framed as advisory.
 - **A narrowly-scoped, time-critical safety decision (the Starlink pattern) is a categorically
   different, lower-risk proposal than a broad goal-directed replanner (the CASPER pattern)** — a
@@ -152,4 +152,4 @@ currently authorized — this remains forward-looking context.
 ## 7. Related Topics
 
 [R502](R502-autonomy-in-space-operations.md) (Autonomy in Space Operations), [R506](R506-machine-reasoning.md) (Machine Reasoning), [R311](R311-course-of-action-analysis.md) (Course of Action Analysis),
-DOM-008 §4.
+[MSTR-003 §2a](../../master/MSTR-003-educational-philosophy.md).

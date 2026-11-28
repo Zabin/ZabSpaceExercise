@@ -4,11 +4,11 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** [R206](R206-bounded-rationality.md)
-> **Referenced By:** DOM-002, MSTR-003, [R316](R316-joint-and-combined-operations.md), [R607](R607-assessment-of-learning-in-wargames.md)
-> **Produces:** the formal name for the loop MSTR-003 §3 calls "structurally unavoidable" and the basis for DOM-002's time-to-decision metric
+> **Referenced By:** MSTR-003, [R316](R316-joint-and-combined-operations.md), [R607](R607-assessment-of-learning-in-wargames.md)
+> **Produces:** the formal name for the loop MSTR-003 §3 calls "structurally unavoidable" and the basis for [FS-201](../../features/FS-201-competency-assessment.md)'s time-to-decision metric
 > **Feature Mapping:** FS-101 (Mission Planning), FS-201 (Competency Assessment)
 > **Related Topics:** [R206](R206-bounded-rationality.md) (Bounded Rationality), [R106](R106-mission-operations.md) (Mission Operations — the concrete plan/task/
-> execute/assess loop this topic names formally), DOM-002 §4 ("time-to-decision... a proxy for
+> execute/assess loop this topic names formally), [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md), [GDS-07 §8](../../architecture/07-data-model.md) ("time-to-decision... a proxy for
 > OODA-loop tightness")
 
 > **Last Reviewed:** 2026-07-02
@@ -50,13 +50,13 @@ next valid window.
 **Tightening one's own loop vs. disrupting the adversary's.** Boyd's competitive claim: an actor
 that completes OODA cycles faster than its adversary gains a decisive advantage, partly by acting
 before the adversary's orientation is even current. This is the formal justification for why
-`time-to-decision` (DOM-002 §4) is a meaningful competency proxy: a cell that observes a window
+`time-to-decision` ([FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)) is a meaningful competency proxy: a cell that observes a window
 opening and takes many sim-minutes to act has a slow loop relative to one that acts promptly, all
 else equal — though see §5 below for the important caveat.
 
 **Orientation is the step most vulnerable to bias and doctrine-mismatch.** Of the four steps,
 Orient is where [R207](R207-cognitive-biases.md)'s cognitive biases and a cell's prior doctrinal assumptions do the most damage
-— misreading an ambiguous RPO approach (DOM-003 §4's inject) as routine when it is hostile (or vice
+— misreading an ambiguous RPO approach ([GDS-05 `FR-W4`/`FR-W8`](../../architecture/05-functional-requirements.md) and [GDS-08 §7.6](../../architecture/08-ui-architecture.md)'s inject) as routine when it is hostile (or vice
 versa) is an Orient-stage failure, not an Observe or Act failure, and a debrief that locates the
 failure at the right OODA stage is more pedagogically useful than a generic "wrong call."
 
@@ -76,7 +76,7 @@ reason MSTR-003 §2 states: this judgment cannot be taught by lecture.
 
 ## 5. Implementation Guidance
 
-- **A "time-to-decision" metric (DOM-002 §4) must be reported as a loop-tightness proxy, not a
+- **A "time-to-decision" metric ([FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md)) must be reported as a loop-tightness proxy, not a
   context-free speed score** — fast action on a window that should have prompted more custody-
   building first ([R105](R105-custody-theory.md)) is not a tight, competent loop, it's a skipped Orient step; the metric needs
   to be paired with a custody-quality check, not read in isolation.
@@ -97,4 +97,4 @@ FS-201 (Competency Assessment) is the direct consumer of the time-to-decision me
 ## 7. Related Topics
 
 [R206](R206-bounded-rationality.md) (Bounded Rationality, the realistic constraints each OODA stage operates under), [R106](R106-mission-operations.md) (Mission
-Operations, the concrete plan/task/execute/assess loop this formalism names), DOM-002 §4.
+Operations, the concrete plan/task/execute/assess loop this formalism names), [FS-201 Scope and System Behaviour](../../features/FS-201-competency-assessment.md) and [GDS-07 §8](../../architecture/07-data-model.md).

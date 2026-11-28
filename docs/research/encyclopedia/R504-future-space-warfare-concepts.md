@@ -16,7 +16,7 @@
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** neither in-world AI nor coding-agent practice directly — this topic is forward-
+**R500 tag:** neither in-world AI nor coding-agent practice directly — this topic is forward-
 looking doctrinal context for future vignette/capability content, included in [R500](R500-index.md) for its
 "future operations" relevance rather than its AI content.
 

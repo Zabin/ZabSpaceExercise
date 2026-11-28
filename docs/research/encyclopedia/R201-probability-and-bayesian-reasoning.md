@@ -4,7 +4,7 @@
 > **Version:** 1.0
 > **Status:** ✅ Done
 > **Dependencies:** —
-> **Referenced By:** [R202](R202-decision-theory.md), [R204](R204-information-theory.md), [R207](R207-cognitive-biases.md), DOM-002, MSTR-003
+> **Referenced By:** [R202](R202-decision-theory.md), [R204](R204-information-theory.md), [R207](R207-cognitive-biases.md), MSTR-003
 > **Produces:** the formal vocabulary underlying [`engine/custody.py`](../../../spacesim/engine/custody.py) confidence and [`engine/cyber.py`](../../../spacesim/engine/cyber.py) attribution scoring
 > **Feature Mapping:** FS-103 (Custody Management), FS-104 (SDA Tasking)
 > **Related Topics:** [R105](R105-custody-theory.md) (Custody Theory — the implementation this topic's formalism justifies), [R116](R116-cyber-operations-against-space-systems.md) §2 (attribution

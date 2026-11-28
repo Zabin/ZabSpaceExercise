@@ -15,7 +15,7 @@
 
 [↑ Tier R500 index](R500-index.md) · [Encyclopedia index](INDEX.md)
 
-**DOM-008 §6 tag:** neither in-world AI nor coding-agent practice — forward-looking doctrinal context
+**R500 tag:** neither in-world AI nor coding-agent practice — forward-looking doctrinal context
 for potential future scope extension.
 
 ## 1. Purpose
