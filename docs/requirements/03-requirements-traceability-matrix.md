@@ -90,7 +90,7 @@ requirements documents in full (every FR/NFR/Candidate leaf and its explicit fie
 > [`02-non-functional-requirements.md`](02-non-functional-requirements.md) for the corresponding
 > sections in the two documents this matrix traces.
 >
-> **Further amended 2026-07** (DOM-002/004/005 backfill, closing `docs/feature-planning/
+> **Further amended 2026-07** (assessment/research/validation backfill, closing `docs/feature-planning/
 > 05-feature-review.md` Finding F-01) to add rows for `CR-19`–`CR-21` and to close the Impl. Package
 > `UNASSIGNED` gap for `FR-4610`/`FR-4710`/`FR-4720` (via `IP-1060` v2.0) and `FR-7220` (via
 > `IP-1100`), both split from `IP-1060` v1.0 per Finding F-03. No baselined FR/NFR row was added. See
@@ -348,7 +348,7 @@ forward-trace columns are `UNASSIGNED` by definition (they describe unimplemente
 out-of-scope-for-v1 capabilities). Research/ADR columns reflect each Candidate's own explicit
 "Source" field; nothing here is inferred. `CR-12`–`CR-18`, marked *(new 2026-07)*, follow
 `strategic-review-2026-07.md`'s disposition — none has an ICD interface, and only `CR-18` cites an
-ADR (`ADR-0031`, for the reasoning behind deferring its full treatment to DOM-005); the rest trace
+ADR (`ADR-0031`, for the reasoning behind deferring its full treatment to the retired validation domain document); the rest trace
 to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Component/Interface are
 `UNASSIGNED` rather than guessed against the C1–C12 list, consistent with `CR-04`/`CR-05` above.
 
@@ -390,10 +390,10 @@ to a not-built GDS-02/03/04 candidate component/concept instead, so Arch. Compon
 | CR-34 *(new 2026-10-24, pass 3, `BL-0369`, `BL-0170`, `BL-0171`)* | Telemetry series reflect the state at each sampled instant; pass-gating of historical points | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 | CR-35 *(new 2026-10-24, pass 3, `BL-0369`)* | Space-weather severity names and the coercion of an unrecognised value | UNASSIGNED | (none cited) | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED | UNASSIGNED |
 
-`CR-19`–`CR-21`, added by the 2026-07 DOM-002/004/005 backfill pass (`docs/feature-planning/
+`CR-19`–`CR-21`, added by the 2026-07 assessment/research/validation backfill pass (`docs/feature-planning/
 05-feature-review.md` Finding F-01), follow the same discipline as `CR-12`–`CR-18`: neither cites a
-research-encyclopedia topic (DOM-002/004 are domain documents, not encyclopedia entries, and the
-Research column is reserved for the latter) nor an Architecture Component (DOM-002/004/005 are not
+research-encyclopedia topic (the assessment and research domain documents are domain documents, not encyclopedia entries, and the
+Research column is reserved for the latter) nor an Architecture Component (the assessment, research and validation domain documents are not
 yet represented in the C1–C12 component list at all — a gap this matrix does not resolve by
 guessing one). `CR-19`/`CR-20` cite the Accepted ADR each conflicts with (`ADR-0017`, `ADR-0029`
 respectively); `CR-21` cites none, since it does not conflict with anything, it simply has no
@@ -702,11 +702,11 @@ matrix was extended to keep pace with `01-functional-requirements.md` and
 - **No baselined FR/NFR row (the numbered, non-Candidate master matrix) was added, removed, or
   altered.**
 
-## DOM-002/004/005 backfill (2026-07)
+## Assessment/research/validation backfill (2026-07)
 
 In response to `docs/feature-planning/05-feature-review.md` Finding F-01, and following the same
 pass documented in `01-functional-requirements.md`'s and `02-non-functional-requirements.md`'s own
-"DOM-002/004/005 backfill" sections, this matrix was extended. Full analysis in
+"Assessment/research/validation backfill" sections, this matrix was extended. Full analysis in
 [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 Summary:
 
@@ -720,9 +720,9 @@ Summary:
   scope, but landed in the same session): `FR-4610`, `FR-4710`, `FR-4720` (now `session/manager.py`
   via `IP-1060` v2.0) and `FR-7220` (now `session/manager.py` via `IP-1100`). Updated the
   Implementation Package reverse index's `UNASSIGNED` bucket accordingly.
-- **No baselined FR/NFR row was added.** Every candidate capability DOM-002/004 describe conflicts
+- **No baselined FR/NFR row was added.** Every candidate capability the assessment and research domain documents describe conflicts
   with an Accepted ADR (`ADR-0017`, `ADR-0029`) or lacks a concrete feature to constrain
-  (`CR-21`); DOM-005 yielded no new leaf, baseline or candidate, at all (methodology guidance, not
+  (`CR-21`); the retired validation domain document yielded no new leaf, baseline or candidate, at all (methodology guidance, not
   a system requirement — see `02`'s own reconciliation section).
 
 ## ADR-0017/ADR-0029 conflict resolution — CR-19/CR-20 promotion (2026-07)

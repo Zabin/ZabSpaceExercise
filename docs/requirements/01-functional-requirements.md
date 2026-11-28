@@ -3,7 +3,7 @@
 > **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered FR added or
 > modified — see "Strategic review reconciliation" section near the end of this document and
 > [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
-> amended (DOM-002/004/005 backfill, 2026-07; no numbered FR added — see "DOM-002/004/005 backfill"
+> amended (assessment/research/validation backfill, 2026-07; no numbered FR added — see "Assessment/research/validation backfill"
 > section near the end of this document and
 > [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
 > further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; **two numbered FR leaves
@@ -3883,11 +3883,11 @@ is no longer required. Same ID, narrower scope.)*
 
 ---
 
-## FR-10000 — Assessment & Research Instrumentation *(new 2026-07, DOM-002/004/005 backfill)*
+## FR-10000 — Assessment & Research Instrumentation *(new 2026-07, assessment/research/validation backfill)*
 
 **Numbering note:** every leading digit 1–9 is already claimed by a top-level category above
 (FR-1000 Simulation Engine Core through FR-9000 AI-Red), so this category — added by the
-2026-07 DOM-002/004/005 backfill pass, once `ADR-0032`/`ADR-0033` resolved the conflicts that
+2026-07 assessment/research/validation backfill pass, once `ADR-0032`/`ADR-0033` resolved the conflicts that
 originally routed its content to `CR-19`/`CR-20` — extends the scheme to a 5-digit leaf ID rather
 than reuse or renumber an existing 4-digit bucket. See `reviews/requirements-domain-backfill-
 report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the full derivation.
@@ -3904,7 +3904,7 @@ report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the 
   time-to-decision deferred per FS-201's own stated scope), derived read-only from existing
   eventlog/custody/order-log/AAR-snapshot state, and shall never aggregate these per-dimension
   results into a single composite score, ranking, or win/loss determination.
-- **Rationale:** DOM-002 §§3–6 names this as the capability that replaces the engine's binary
+- **Rationale:** This is the capability that replaces the engine's binary
   objective-flip signal with a richer measurement of *how* a cell demonstrated a vignette's
   intended competency; FS-201 elaborates it in full. `ADR-0032` carves this specific design —
   non-adjudicative, non-aggregating, purely descriptive — out of `ADR-0017`'s "no automated
@@ -3930,7 +3930,7 @@ report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the 
   arbitrary number of invocations.
 - **Verification Method:** Test
 - **Dependencies:** FR-1510, FR-3410, FR-7310
-- **Source Documents:** DOM-002 §§3–6; FS-201 (Scope, System Behaviour, Acceptance Criteria);
+- **Source Documents:** MSTR-003 §8; GDS-05 `FR-A1`; GDS-07 §8; FS-201 (Scope, System Behaviour, Acceptance Criteria);
   ADR-0032.
 - **Related ADRs:** ADR-0017, ADR-0032
 - **Related Interfaces:** None — no ICD interface currently names this scoring/report boundary;
@@ -3949,7 +3949,7 @@ report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the 
   vignette and shall export, for each run, a structured record containing the vignette identifier,
   the seed, an experimenter-supplied condition label, and that run's `FR-10110` rubric-tier
   results, without relaxing engine determinism to characterize run-to-run variability.
-- **Rationale:** DOM-004 §5 names this as the capability closing the stated gap that "a researcher
+- **Rationale:** The retired research domain document §5 names this as the capability closing the stated gap that "a researcher
   today would have to script directly against `eventlog`/`save` artifacts"; FS-301 elaborates it
   in full. `ADR-0033` supersedes `ADR-0029` (which had previously rejected exactly this dedicated
   export/analysis interface) to authorize it.
@@ -3962,7 +3962,7 @@ report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the 
 - **Preconditions:** `FR-10110` rubric computation is available for each run in the batch.
 - **Postconditions:** Each seeded run remains independently, byte-identically reproducible; no
   non-determinism is introduced within or between runs to characterize variability — variability
-  is sampled by driving the engine across many seeds externally (DOM-005 §6), never by relaxing
+  is sampled by driving the engine across many seeds externally, never by relaxing
   `engine/`'s own determinism.
 - **Acceptance Criteria:** Given a batch of N seeded runs of the same vignette, the exported record
   set contains exactly N entries, each tagged with its own seed/vignette-ID/condition label and
@@ -3970,7 +3970,7 @@ report.md` and `reviews/requirements-adr-conflict-resolution-report.md` for the 
   underlying state (verified via the existing determinism property test's own mechanism).
 - **Verification Method:** Test
 - **Dependencies:** FR-10110, FR-1120
-- **Source Documents:** DOM-004 §§4–6; FS-301 (Scope, System Behaviour); ADR-0033.
+- **Source Documents:** GDS-07 §8; GDS-05 `FR-A2`; CR-21; FS-301 (Scope, System Behaviour); ADR-0033.
 - **Related ADRs:** ADR-0029 (superseded), ADR-0033
 - **Related Interfaces:** None — no ICD interface currently names this export boundary; FS-301's
   own Open Questions flag the same gap. Left `UNASSIGNED` in the traceability matrix rather than
@@ -4243,11 +4243,10 @@ to GDS-02/03/04 explicitly marked "not built, not scheduled, not committed" — 
 status as CR-01–CR-11 above, just newly named rather than newly built. See
 `reviews/requirements-update-report.md` for the full derivation.
 
-**CR-19–CR-21 added 2026-07**, following a `04-requirements-engineering` pass against DOM-002
-(Assessment Framework), DOM-004 (Research Framework), and DOM-005 (Validation Framework) —
+**CR-19–CR-21 added 2026-07**, following a `04-requirements-engineering` pass against the retired assessment, research and validation domain documents —
 closing `docs/feature-planning/05-feature-review.md` Finding F-01 (these domains ground shipped
 Feature Specifications FS-201/FS-202/FS-301 with zero corresponding requirement anywhere in this
-baseline). See "DOM-002/004/005 backfill" near the end of this document and
+baseline). See "Assessment/research/validation backfill" near the end of this document and
 `reviews/requirements-domain-backfill-report.md` for the full analysis. **CR-19 and CR-20 were
 subsequently promoted to the numbered baseline** (see `## FR-10000` above) once the project owner
 resolved their blocking ADR conflicts via `ADR-0032`/`ADR-0033` — retained below, marked
@@ -4255,20 +4254,20 @@ resolved their blocking ADR conflicts via `ADR-0032`/`ADR-0033` — retained bel
 by that promotion.
 
 - **CR-19 — Automated competency-assessment rubric computation. `PROMOTED 2026-07 → FR-10110`,
-  once `ADR-0032` resolved the blocking conflict below.** DOM-002 §§3–6 and FS-201 describe an
+  once `ADR-0032` resolved the blocking conflict below.** The retired assessment domain document §§3–6 and FS-201 describe an
   always-available, automated computation of qualitative rubric tiers (custody quality, window
   discipline, belief-truth divergence, …) per cell per exercise. This could not be written as a
   baselined FR when first identified because it was in direct tension with two Accepted decisions:
   ADR-0017 ("No automated scoring or assessment mechanism exists in v1... outcomes are adjudicated
   and narrated by the White Cell facilitator") and FR-4710 above (already baselined: "the system
-  shall not compute or display an automated score or win/loss determination"). DOM-002 §5
+  shall not compute or display an automated score or win/loss determination"). The retired assessment domain document §5
   deliberately designed the rubric to avoid a single composite score specifically to distinguish
   "rubric-tier reporting" from "scoring/win-loss" — the project owner resolved this by amending
   ADR-0017 with a narrow carve-out (`ADR-0032`) rather than rescoping FS-201 or rejecting the
-  capability. **Source:** DOM-002 §§3–6; FS-201 (Scope, System Behaviour); ADR-0017; ADR-0032;
+  capability. **Source:** MSTR-003 §8; GDS-05 `FR-A1`; GDS-07 §8; FS-201 (Scope, System Behaviour); ADR-0017; ADR-0032;
   FR-4710 (this document); `IP-2010`'s header note.
 - **CR-20 — Dedicated multi-run/cohort research-export interface. `PROMOTED 2026-07 → FR-10210`,
-  once `ADR-0033` resolved the blocking conflict below.** DOM-004 §5 and FS-301 describe a
+  once `ADR-0033` resolved the blocking conflict below.** The retired research domain document §5 and FS-301 describe a
   purpose-built export/cohort-management layer (structured per-run records with condition-label
   metadata, across many seeded runs) to close the stated gap that "a researcher today would have
   to script directly against `eventlog`/`save` artifacts." This could not be written as a
@@ -4279,9 +4278,9 @@ by that promotion.
   subsystem is introduced"). ADR-0029's own Alternatives Considered section explicitly named and
   rejected "introduce a dedicated export/analysis interface for assessment designers" — precisely
   what FS-301 proposes. The project owner resolved this by superseding ADR-0029 outright
-  (`ADR-0033`), authorizing the dedicated interface FS-301 originally proposed. **Source:** DOM-004
-  §5; FS-301 (Scope, User Workflows); ADR-0029 (superseded); ADR-0033.
-- **CR-21 — Human-subjects research authorization/ethics boundary.** DOM-004 §6 states that any
+  (`ADR-0033`), authorizing the dedicated interface FS-301 originally proposed. **Source:** GDS-07 §8;
+  GDS-05 `FR-A2`; FS-301 (Scope, User Workflows); ADR-0029 (superseded); ADR-0033.
+- **CR-21 — Human-subjects research authorization/ethics boundary.** The retired research domain document §6 states that any
   future feature enabling human-subjects research (e.g., cross-institution de-identified trainee
   data collection) requires separate authorization and the institution's own IRB/ethics process,
   and "must not be assumed authorized merely because this framework describes the capability gap."
@@ -4290,7 +4289,7 @@ by that promotion.
   above) are structured-aggregate assessment/export capabilities, not a human-subjects research
   program in the IRB sense, so this boundary remains unaddressed by their promotion. A requirement
   would still be vacuous until a concrete human-subjects-research feature is proposed; recorded
-  here so the constraint is not silently forgotten if/when one is. **Source:** DOM-004 §6.
+  here so the constraint is not silently forgotten if/when one is. **Source:** FS-301 (Scope); MSTR-006 §3; ADR-0033.
 - **CR-22 — Human-readable time bounds for time-span exports. `PROMOTED 2026-10-24 → FR-7450`, on the project owner's decision (`BL-0181`, 2026-10-18): ISO-8601 UTC bounds.** *(new 2026-10-15, `BL-0181`)* The
   time-span exports (`FR-7410`, `FR-7420`, `FR-2320`) take their span bounds only as integer
   microseconds of simulated time. The console never displays that unit, so an operator must read the
@@ -4407,7 +4406,7 @@ by that promotion.
   negative-training candidates and states plainly "no mitigation implemented in v1." A requirement
   for a consistency-support mechanism (checklist, rubric, cross-facilitator calibration aid) around
   manual adjudication (ADR-0017) cannot be written today because no approved document commits to
-  building one — full treatment is explicitly deferred to DOM-005 (Validation Framework) once
+  building one — full treatment is explicitly deferred to the retired validation domain document once
   authored, per [`ADR-0031`](../architecture/adr/ADR-0031-governance-record-consistency.md). The
   risk row's other three named candidates are **not** duplicated here because each already has
   baseline coverage: AI-Red's ground-truth-read exploitability is CR-01/CNFR-06; Δv-as-terminal-life
@@ -4511,25 +4510,24 @@ changed here:
 - Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
   Strategic Assumptions Register as a cited input.
 
-## DOM-002/004/005 backfill (2026-07)
+## Assessment/research/validation backfill (2026-07)
 
 In response to `docs/feature-planning/05-feature-review.md` Finding F-01 (three shipped Feature
-Specifications — FS-201, FS-202, FS-301 — grounded in Domain documents DOM-002/004/005 with zero
+Specifications — FS-201, FS-202, FS-301 — grounded in the retired assessment, research and validation domain documents with zero
 corresponding requirement anywhere in this baseline), this document was reviewed against those
 three domain documents and their FS-201/FS-301 output. Full analysis in
 [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 Summary of what changed here:
 
-- **No numbered `FR-1xxx` baseline requirement was added.** Every candidate capability DOM-002/004
-  describe either directly conflicts with an Accepted ADR (ADR-0017 for DOM-002/FS-201's automated
-  rubric computation; ADR-0029 for DOM-004/FS-301's dedicated research-export interface) or is not
-  concrete enough to write a testable requirement against yet (DOM-004 §6's human-subjects
+- **No numbered `FR-1xxx` baseline requirement was added.** Every candidate capability the assessment and research domain documents
+  describe either directly conflicts with an Accepted ADR (ADR-0017 for the assessment domain document's and FS-201's automated
+  rubric computation; ADR-0029 for the research domain document's and FS-301's dedicated research-export interface) or is not
+  concrete enough to write a testable requirement against yet (the retired research domain document §6's human-subjects
   boundary, which has no concrete feature to constrain today). This is a materially different
   outcome than the Feature Catalog's own prior estimate ("roughly 6–9 additional Features," per
   `docs/feature-planning/05-feature-review.md` Finding F-01's original Recommendation) — that
   estimate assumed a clean backfill and did not anticipate these two ADR conflicts, which only
-  surfaced during this pass. See the backfill report for the full reasoning, including why DOM-005
-  (Validation Framework) yields **zero** new leaves at all: it is validation-methodology guidance
+  surfaced during this pass. See the backfill report for the full reasoning, including why the retired validation domain document yields **zero** new leaves at all: it is validation-methodology guidance
   (how to check an instrument's validity), not a new system capability, and its one arguably
   system-level statement (Monte Carlo over seeds without relaxing determinism, §6) restates the
   already-baselined NFR-1500 determinism invariant rather than adding a new one.
@@ -4540,7 +4538,7 @@ Summary of what changed here:
 
 Following direct project-owner decision (per explicit instruction: amend `ADR-0017` with a narrow
 carve-out for `CR-19`; supersede `ADR-0029` outright for `CR-20`), `ADR-0032` and `ADR-0033` were
-authored resolving both blocking conflicts the "DOM-002/004/005 backfill" pass above found. This
+authored resolving both blocking conflicts the "Assessment/research/validation backfill" pass above found. This
 is a same-baseline follow-up, not a new backfill pass — re-running this document's own Step 0
 against the two new ADRs, per this skill's own "we added an ADR — update the requirements" worked
 example. Summary of what changed here:

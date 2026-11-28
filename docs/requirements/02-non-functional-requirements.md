@@ -3,8 +3,8 @@
 > **Status:** Draft — amended (strategic-review reconciliation, 2026-07; no numbered NFR added or
 > modified — see "Strategic review reconciliation" section near the end of this document and
 > [`reviews/requirements-update-report.md`](../reviews/requirements-update-report.md)); further
-> amended (DOM-002/004/005 backfill, 2026-07; no numbered NFR added, no new Candidate NFR added —
-> see "DOM-002/004/005 backfill" section near the end of this document and
+> amended (assessment/research/validation backfill, 2026-07; no numbered NFR added, no new Candidate NFR added —
+> see "Assessment/research/validation backfill" section near the end of this document and
 > [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md));
 > further amended (`ADR-0032`/`ADR-0033` conflict resolution, 2026-07; `01-functional-requirements.md`
 > gained two new baselined FR leaves — `FR-10110`, `FR-10210` — this document gained none; the ADR
@@ -50,7 +50,7 @@
 ## A note on the requirement tag schemes — read before using this document
 
 **Updated 2026-10-23.** GDS-06 (Non-functional Requirements) is now authored with its merge gate
-closed and **supersedes** the retired v1 build specification §9. GDS-06 states each
+closed and **supersedes** The retired v1 build specification §9. GDS-06 states each
 quality attribute as a tag (`NFR-1`…`NFR-19`; `NFR-1`…`NFR-10` keep the legacy build-spec numbers);
 this document elaborates each tag into leaves (`NFR-1100`…) with full traceability fields. Every
 leaf's **Source documents** field now names its GDS-06 tag first. The legacy build-spec citations
@@ -494,12 +494,12 @@ review passes actually run against it).
 
 - **NFR-2810 — Fidelity claims validated against cited reference values** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Each moderate-fidelity behavior a training lesson depends on (for example the power budget, custody decay, jamming and engagement outcomes) shall be validated by a recorded comparison of simulated quantities against reference values cited in the research encyclopedia, not by judgment alone.
-  - **Rationale:** Tests verify that the engine matches its specification; they do not show that the specification behaves plausibly (GDS-06 NFR-19, absorbing DOM-005 §3–§4). The June 2026 power-model recalibration is the worked precedent.
+  - **Rationale:** Tests verify that the engine matches its specification; they do not show that the specification behaves plausibly (GDS-06 NFR-19). The June 2026 power-model recalibration is the worked precedent.
   - **Metric or verification method:** Inspection — a comparison table exists for each such behavior, citing its reference values; a regression pin test keeps a validated calibration from drifting (tests: the generated Test column, `NFR-2850`).
   - **Priority:** Should
   - **Affected subsystems:** `engine/` (the calibrated models), `docs/research/encyclopedia/`
   - **Dependencies:** NFR-1500
-  - **Source documents:** GDS-06 NFR-19 (gap G6); DOM-005 §3–§4 as absorbed into GDS-06.
+  - **Source documents:** GDS-06 NFR-19 (gap G6).
   - **Related ADRs:** ADR-0009
 
 - **NFR-2820 — Every test declares the requirement or feature it verifies** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
@@ -580,7 +580,7 @@ review passes actually run against it).
 
 - **NFR-3010 — Belief is visibly distinguishable from ground truth** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** A cell's custody and confidence picture shall be visually distinguishable from ground truth at a glance: every displayed object of another cell carries its confidence encoding (current, aging, propagated-only or uncharacterized), and objects the cell has not detected are not drawn.
-  - **Rationale:** Conflating belief and truth in the UI undermines the fog-of-war lesson even when the backend enforces the boundary (GDS-06 NFR-9, absorbing DOM-007 §4; GDS-08 §5).
+  - **Rationale:** Conflating belief and truth in the UI undermines the fog-of-war lesson even when the backend enforces the boundary (GDS-06 NFR-9; GDS-08 §5).
   - **Metric or verification method:** Test — NFR-2840 (a); Inspection of the render-from-custody layer (`symbology.js`, `globe.js`, `world.js`).
   - **Priority:** Must
   - **Affected subsystems:** `ui_web/static/` (`globe.js`, `world.js`, `symbology.js`)
@@ -590,7 +590,7 @@ review passes actually run against it).
 
 - **NFR-3020 — An unavailable action states its reason before it is committed** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Any command the server would refuse shall be presented as unavailable, with the server's refusal reason in operator language, before the operator commits it.
-  - **Rationale:** Operators must never discover "you can't do that" only after committing (GDS-06 NFR-9, absorbing DOM-007 §4; GDS-08 §6, the button-state contract).
+  - **Rationale:** Operators must never discover "you can't do that" only after committing (GDS-06 NFR-9; GDS-08 §6, the button-state contract).
   - **Metric or verification method:** Test — the dry-run validation returns the reason without changing state (tests: the generated Test column, `NFR-2850`); NFR-2840 (b) for the rendered half.
   - **Priority:** Must
   - **Affected subsystems:** `engine/orders.py` (`dry_run`), `ui_web/static/app.js`
@@ -600,7 +600,7 @@ review passes actually run against it).
 
 - **NFR-3030 — Every panel obeys the panel-manager contract** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Every console panel shall be closable, floatable, resizable and resettable to its dock through the panel manager from its first release.
-  - **Rationale:** A panel bolted into a fixed grid is accidental friction that later needs retrofitting (GDS-06 NFR-9, absorbing DOM-007 §5; GDS-08 §4). As built, the Compare and Assessment panels are not registered (`BL-0305`).
+  - **Rationale:** A panel bolted into a fixed grid is accidental friction that later needs retrofitting (GDS-06 NFR-9; GDS-08 §4). As built, the Compare and Assessment panels are not registered (`BL-0305`).
   - **Metric or verification method:** Inspection — every panel in `index.html` is registered in `panels.js`.
   - **Priority:** Should
   - **Affected subsystems:** `ui_web/static/panels.js`, `index.html`
@@ -610,7 +610,7 @@ review passes actually run against it).
 
 - **NFR-3040 — Summary and detail views agree** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Any element that previews a fuller view (a sparkline, badge or thumbnail graph) shall use the same data source, time window and scaling as the view it previews.
-  - **Rationale:** An operator correctly distrusts a preview that disagrees with its detail view (GDS-06 NFR-9, absorbing DOM-007 §4).
+  - **Rationale:** An operator correctly distrusts a preview that disagrees with its detail view (GDS-06 NFR-9).
   - **Metric or verification method:** Inspection — each preview and its detail view read the same series endpoint with the same window.
   - **Priority:** Should
   - **Affected subsystems:** `ui_web/static/graph.js`, `app.js`
@@ -620,7 +620,7 @@ review passes actually run against it).
 
 - **NFR-3050 — The cause of a moving telemetry value is shown** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** Where a telemetry value changes because of a modelled condition (for example eclipse-driven battery drain), the console shall show that condition next to the value.
-  - **Rationale:** A falling value with no visible cause reads as a bug and defeats the lesson (GDS-06 NFR-9, absorbing DOM-007 §4; the eclipse-drain precedent).
+  - **Rationale:** A falling value with no visible cause reads as a bug and defeats the lesson (GDS-06 NFR-9; the eclipse-drain precedent).
   - **Metric or verification method:** Inspection — eclipse state is shown beside the power telemetry it drives.
   - **Priority:** Should
   - **Affected subsystems:** `engine/telemetry.py`, `ui_web/static/app.js`
@@ -630,7 +630,7 @@ review passes actually run against it).
 
 - **NFR-3060 — White Cell can see the active Red doctrine preset** *(new 2026-10-23, GDS ladder alignment — see [`reviews/requirements-update-gds-ladder-batch.md`](../reviews/requirements-update-gds-ladder-batch.md))*
   - **Description:** When AI-Red is active, White Cell shall be able to see which Red doctrine preset is active.
-  - **Rationale:** A facilitator needs to know what Red is doing for pacing and debrief honesty (GDS-06 NFR-9, absorbing DOM-008 §3).
+  - **Rationale:** A facilitator needs to know what Red is doing for pacing and debrief honesty (GDS-06 NFR-9).
   - **Metric or verification method:** Inspection — the active preset is shown on a White Cell surface.
   - **Priority:** Should
   - **Affected subsystems:** `session/redai.py`, `ui_web/static/app.js`
@@ -853,7 +853,7 @@ Explicitly excluded from the numbered baseline above.
     or restart, beyond the documented single-sitting model.
   - **Why excluded:** `build-spec/01`'s decision log lists "Save/resume mid-exercise" as v2-deferred
     by name; no v1 source document commits to crash-recoverable availability.
-  - **Source documents:** the retired v1 build specification §3.2 (deferred list) — cited as the
+  - **Source documents:** The retired v1 build specification §3.2 (deferred list) — cited as the
     reason for exclusion.
 
 - **CNFR-06 — AI-Red epistemic parity / fairness as a quality attribute**
@@ -909,23 +909,22 @@ changed here:
 - Updated the Authoritative-inputs header's ADR range (`ADR-0029` → `ADR-0031`) and added the
   Strategic Assumptions Register as a cited input.
 
-## DOM-002/004/005 backfill (2026-07)
+## Assessment/research/validation backfill (2026-07)
 
 In response to `docs/feature-planning/05-feature-review.md` Finding F-01, this document was
-reviewed against DOM-002 (Assessment Framework), DOM-004 (Research Framework), and DOM-005
-(Validation Framework) for any non-functional quality attribute these domains imply. Full analysis
+reviewed against the retired assessment, research and validation domain documents for any non-functional quality attribute these domains imply. Full analysis
 in [`reviews/requirements-domain-backfill-report.md`](../reviews/requirements-domain-backfill-report.md).
 Summary of what changed here:
 
-- **No numbered `NFR-1xxx` requirement was added, and no new Candidate NFR was added.** DOM-005 —
+- **No numbered `NFR-1xxx` requirement was added, and no new Candidate NFR was added.** The retired validation domain document —
   the domain document with the most plausible NFR-shaped content (validation methodology) — is
   process/methodology guidance for how a *future* Implementation Package should reason about an
   instrument's validity, not a system quality attribute this baseline can hold the running system
   to. Its one statement with genuine system-behavior shape ("characterize typical behavior by
-  driving the engine across many seeds, never by relaxing determinism within a run," DOM-005 §6)
+  driving the engine across many seeds, never by relaxing determinism within a run," the retired validation domain document §6)
   restates NFR-1500 (Determinism) applied externally rather than describing a new constraint —
   adding a second NFR ID for the same invariant would be a duplicate, which this baseline's own
-  writing rules forbid. DOM-002/004's candidate capabilities (automated rubric computation,
+  writing rules forbid. The assessment and research domain documents' candidate capabilities (automated rubric computation,
   dedicated research export) are functional in character and are addressed as `CR-19`/`CR-20` in
   `01-functional-requirements.md`, not here.
 
@@ -937,7 +936,7 @@ document was reviewed for any non-functional quality attribute either new FR lea
 new NFR was added.** Both leaves' own Postconditions (no `WorldState` mutation, no aggregation;
 byte-identical seeded reproducibility) restate existing invariants (`NFR-1500` Determinism,
 the replay-safety principle already governing every read-only Feature in this baseline) rather
-than introducing a new one — consistent with this section's own reasoning above for why DOM-005
+than introducing a new one — consistent with this section's own reasoning above for why the retired validation domain document
 itself yielded nothing.
 
 ## Completion report
@@ -946,8 +945,8 @@ itself yielded nothing.
   alignment pass, which added 19; `NFR-2850` added the same day for `BL-0322`); numbering leaves gaps per category, consistent with
   `requirements/01`'s scheme. *(The figure of 23 recorded here originally predates `NFR-2010`,
   `NFR-3400`–`NFR-3600` and `NFR-3700`.)* Unchanged by
-  the 2026-07 strategic-review reconciliation pass and by the 2026-07 DOM-002/004/005 backfill pass.
-- **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`). Unchanged by the DOM-002/004/005
+  the 2026-07 strategic-review reconciliation pass and by the 2026-07 assessment/research/validation backfill pass.
+- **Candidate requirement count:** 7 (`CNFR-01`…`CNFR-07`). Unchanged by the assessment/research/validation
   backfill pass — see that section above for why.
 - **Categories with no derivable NFRs:** 1 of the 15 required categories — **Observability**
   (§9 above) — has no numbered NFR; its gap is recorded as `CNFR-01`. All other 14 categories
