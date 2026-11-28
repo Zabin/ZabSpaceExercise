@@ -52,6 +52,18 @@ initiative was authorized. Authorization is scoped to what was actually approved
 1 of a research expansion does not imply approval of Tier 2-4 (this mirrors the project's general
 "actions are authorized at the scope specified, not beyond" working rule).
 
+## 3a. Content change classes
+
+*Moved here from the retired governance domain document (§3). Governs the simulator's content and
+feature scope, where §1 to §3 govern the documentation corpus.*
+
+| Class | Example | Authorization needed |
+|---|---|---|
+| **Additive, low-risk** | A new inject template, a new vignette within an existing progression slot (the [vignette framework](../vignettes/00-vignette-framework.md), Skill-progression model) | Author discretion; record in `ROADMAP.md`/vignette INDEX |
+| **Additive, scope-expanding** | A new effect category, a new access channel, a new sensor modality | Feature Specification required (Phase 4 process) before any Implementation Package |
+| **Modifying existing balance** | Recalibrating power-drain constants (the Jun 2026 audit precedent), ROE defaults | Documented audit/rationale (see `AUDIT-2026-06*.md` under `docs/reviews/` as the precedent format) + regression test |
+| **Large, multi-tier undertaking** | The research-corpus 10× expansion (§3), a new top-level domain | 🅿️ explicit user authorization per §3, tier by tier |
+
 ## 4. AI authoring constraints
 
 Documents in this corpus are written to be **independently retrievable**: an agent that opens one
@@ -110,6 +122,17 @@ If two documents disagree:
    document with a `> **Open question:**` callout, recorded in the former future-work list, or — for anything
    that changes scope or strategic direction — asked of the user) rather than resolved by silent
    authorial choice.
+
+## 6a. Decision rights
+
+*Moved here from the retired governance domain document (§6).*
+
+| Decision | Who decides |
+|---|---|
+| Whether a deferred item on the backlog (`docs/pipeline/backlog.md`) or a LATER row of the Release 2.0 plan graduates to a Feature Specification | Any contributor, by writing the FS — no separate approval gate for *specifying* |
+| Whether a 🅿️-tier or large undertaking is authorized to *start* | The user/program owner (§3) |
+| Whether a vignette content change is balanced/correct doctrine | White Cell subject-matter judgment ([MSTR-003](MSTR-003-educational-philosophy.md) §7; the vignette framework, Doctrine to content) |
+| Whether an architecture/invariant (MSTR-002) may be relaxed for a feature | Not a unilateral author decision — requires explicit escalation per §6 |
 
 ## 7. Periodic reviews (Phases 6-8)
 
